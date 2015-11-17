@@ -10,15 +10,18 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <stdlib.h>
 
 #define BUFFER_SIZE 32
 
 // +++++++++++++++++++++++++ UTILITY +++++++++++++++++++++++++
 // generic function that allows us to send any message to the server
-void sendToServer(PacketHeader &pktHdr, MailHeader &mailHdr, char* serverCode, char name[], int entityIndex1, int entityIndex2, int entityIndex3) {
+void sendToServer(PacketHeader &pktHdr, MailHeader &mailHdr, char* serverCode, char name[], int entityIndex1, int entityIndex2, int entityIndex3, int mailBox) {
     mailHdr.to = 0;
-    mailHdr.from = 0;
-    pktHdr.to = 0;
+    mailHdr.from = mailBox;
+    // generating random server number
+    int serverNum = srand() % (serverCount - 1);
+    pktHdr.to = serverNum;
 
     stringstream ss;
 	ss << serverCode;
@@ -52,9 +55,9 @@ void sendToServer(PacketHeader &pktHdr, MailHeader &mailHdr, char* serverCode, c
 }
 
 // generic function that allows us to receive any message to the server
-string getFromServer(PacketHeader &pktHdr, MailHeader &mailHdr) {
+string getFromServer(PacketHeader &pktHdr, MailHeader &mailHdr, int mailBox) {
 	char inBuffer[64];
-    postOffice->Receive(0, &pktHdr, &mailHdr, inBuffer);
+    postOffice->Receive(mailBox, &pktHdr, &mailHdr, inBuffer);
     stringstream ss;
     ss << inBuffer;
     return ss.str();
@@ -64,13 +67,12 @@ string getFromServer(PacketHeader &pktHdr, MailHeader &mailHdr) {
 // this function takes the syscallCode, name of entity to be created, and the entity indexes
 // if it is not create, pass name as ""
 // if entity indexe(s) are needed, pass -1
-string sendAndRecieveMessage(char* sysCode, char* name, int entityIndex1, int entityIndex2, int entityIndex3) {
+string sendAndRecieveMessage(char* sysCode, char* name, int entityIndex1, int entityIndex2, int entityIndex3, int mailBox) {
 	PacketHeader pktHdr;
 	MailHeader mailHdr;
-
 	sendToServer(pktHdr, mailHdr, sysCode, name, entityIndex1, entityIndex2, entityIndex3);
 
-	return getFromServer(pktHdr, mailHdr);
+	return getFromServer(pktHdr, mailHdr, mailBox);
 }
 
 // create lock syscall

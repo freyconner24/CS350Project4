@@ -106,6 +106,7 @@ Initialize(int argc, char **argv)
 #ifdef NETWORK
     double rely = 1;		// network reliability
     int netname = 0;		// UNIX socket name
+    int serverCount = 0;
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
@@ -146,6 +147,11 @@ Initialize(int argc, char **argv)
 	    netname = atoi(*(argv + 1));
 	    argCount = 2;
 	}
+  if (!strcmp(*argv, "-n")){
+    ASSERT(argc > 1);
+    serverCount = atoi(*(argv + 1));
+    argCount = 2;
+  }
 #endif
     //Handling and saving the -P argument which determines page eviction policy
     else if (!strcmp(*argv, "-P")) {

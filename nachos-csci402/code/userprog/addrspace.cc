@@ -137,7 +137,7 @@ AddrSpace::AddrSpace(OpenFile *filename) : fileTable(MaxOpenFiles) {
 executable = filename;
 if (executable == NULL) {
 printf("Unable to open file\n");
-return; 
+return;
 }
 
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
@@ -155,17 +155,17 @@ return;
     int tempIndex = 0;
 // Initializing and reading into process' pagetable
     pageTableLock->Acquire();
-    pageTable = new ExtendedTranslationEntry[numPages]; 
+    pageTable = new ExtendedTranslationEntry[numPages];
     processCount++;
     processId = processCount;
     StackTopForMain =  divRoundUp(size, PageSize);
     //Populating page table
     for (i = 0; i < numPages; i++) {
-      pageTable[i].virtualPage = i; 
+      pageTable[i].virtualPage = i;
       pageTable[i].valid = FALSE;
       pageTable[i].use = FALSE;
       pageTable[i].dirty = FALSE;
-      pageTable[i].readOnly = FALSE;  
+      pageTable[i].readOnly = FALSE;
       pageTable[i].byteOffset = 40 + pageTable[i].virtualPage * PageSize;
       //If the page is in the code segment or initialized data, it will be read from the executable
       if(i < divRoundUp(noffH.code.size + noffH.initData.size, PageSize) ) {
@@ -303,14 +303,14 @@ int AddrSpace::NewPageTable(){
       newTable[i].diskLocation = NEITHER;
       newTable[i].byteOffset = -1;
     }
-    
+
     delete[] pageTable;
     pageTable = newTable;
     numPages = numPages+8;
     //RestoreState();
-    int tempNum = numPages - 8 ; 
+    int tempNum = numPages - 8 ;
     pageTableLock->Release();
-    return tempNum; 
+    return tempNum;
 }
 
 //Removing a thread from a process
@@ -327,17 +327,17 @@ void AddrSpace::DeleteCurrentThread(){
       pageTable[stackLocation + i].physicalPage = -1;
       for(int j = 0; j < TLBSize; j++){
         if(machine->tlb[j].physicalPage = stackLocation + i){
-            machine->tlb[j].valid = FALSE;    
+            machine->tlb[j].valid = FALSE;
         }
       }
     }
 
     pageTable[stackLocation + i].valid = FALSE;
-    
+
     //interrupt->SetLevel(oldLevel);
   }
     pageTableLock->Release();
-  
+
 }
 //Helper function for development
 void AddrSpace::PrintPageTable(){
