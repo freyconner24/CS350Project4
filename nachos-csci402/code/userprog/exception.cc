@@ -538,7 +538,8 @@ void ExceptionHandler(ExceptionType which) {
           if (filePointer){ // check if pointer is not null
             AddrSpace* as = new AddrSpace(filePointer); // Create new addrespace for this executable file
             delete [] nameOfProcess; //TODO: MOVE THIS DELETE AROUND< PLS
-            Thread* newThread = new Thread("ExecThread");
+            Thread* newThread = new Thread("ExecThread", mailboxCounter);
+            ++mailboxCounter;
             newThread->space = as; //Allocate the space created to this thread's space
             processTable->processEntries[processCount] = new ProcessEntry();
             processTable->processEntries[processCount]->space = as;

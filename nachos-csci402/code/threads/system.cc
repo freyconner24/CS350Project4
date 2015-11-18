@@ -50,6 +50,7 @@ Machine *machine;	// user program memory and registers
 
 #ifdef NETWORK
 PostOffice *postOffice;
+int mailboxCounter;
 #endif
 
 
@@ -107,6 +108,7 @@ Initialize(int argc, char **argv)
     double rely = 1;		// network reliability
     int netname = 0;		// UNIX socket name
     int serverCount = 0;
+    int mailboxCounter = 0;
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {

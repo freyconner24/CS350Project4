@@ -67,12 +67,12 @@ string getFromServer(PacketHeader &pktHdr, MailHeader &mailHdr, int mailBox) {
 // this function takes the syscallCode, name of entity to be created, and the entity indexes
 // if it is not create, pass name as ""
 // if entity indexe(s) are needed, pass -1
-string sendAndRecieveMessage(char* sysCode, char* name, int entityIndex1, int entityIndex2, int entityIndex3, int mailBox) {
+string sendAndRecieveMessage(char* sysCode, char* name, int entityIndex1, int entityIndex2, int entityIndex3) {
 	PacketHeader pktHdr;
 	MailHeader mailHdr;
-	sendToServer(pktHdr, mailHdr, sysCode, name, entityIndex1, entityIndex2, entityIndex3);
+	sendToServer(pktHdr, mailHdr, sysCode, name, entityIndex1, entityIndex2, entityIndex3, currentThread->mailbox);
 
-	return getFromServer(pktHdr, mailHdr, mailBox);
+	return getFromServer(pktHdr, mailHdr, currentThread->mailBox);
 }
 
 // create lock syscall
