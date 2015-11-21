@@ -353,6 +353,35 @@ void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char*
   waitQueue->Append(msg); //Put current thread on the lock’s waitQueue
 }
 
+int decodeMailbox(int value) {
+    return value / 1000;
+}
+
+int decodeEntityIndex(int value) {
+    return value % 1000;
+}
+
+bool serverAndMachineIdMatch(int mailboxNum) {
+    return mailboxNum == machineId;
+}
+
+bool sendMessageToAllOtherServers(string ssString, PacketHeader &pktHdr, MailHeader &mailHdr) {
+    char replyBuffer[MaxMailSize];
+    char* ssStringC = ssString.c_str();
+    for(unsigned int i = 0; i < strlen(ssStringC); ++i) {
+        replyBuffer[i] = ssStringC[i];
+    }
+
+    replyBuffer[strlen(tempChar)] = '\0';
+
+    for(int i = 0; i < serverCount; ++i) {
+        if(i != machineId) {
+            pktHdr.to = i;
+            sendMessageToServer(replyBuffer, pktHdr, mailHdr);
+        }
+    }
+}
+
 // +++++++++++++++++ UTILITY SERVER METHODS +++++++++++++++++
 
 // abstract method to send message to the client from the server

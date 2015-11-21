@@ -105,6 +105,7 @@ extern SynchDisk   *synchDisk;
 #include "post.h"
 extern PostOffice* postOffice;
 extern int mailboxCounter;
+extern int machineId;
 #endif
 
 #endif // SYSTEM_H
