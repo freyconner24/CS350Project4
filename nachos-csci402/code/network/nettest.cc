@@ -32,8 +32,8 @@
 //	4. wait for an acknowledgement from the other machine to our
 //	    original message
 
-#define MAX_MON_COUNT 50
-#define MAX_ARR_COUNT 10
+#define MAX_MON_COUNT 1000
+#define MAX_ARR_COUNT 50
 
 void
 MailTest(int farAddr)
@@ -319,11 +319,10 @@ void serverReleaseLock(int lockIndex, PacketHeader &pktHdr, MailHeader &mailHdr)
   }
 }
 
-void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messageLength) {
+void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messageLength, int mailbox) {
     pktHdr.to = pktHdr.from;
-    int clientMailbox = mailHdr.to;
-    mailHdr.to = mailHdr.from;
-    mailHdr.from = clientMailbox;
+    mailHdr.to = mailbox;
+    mailHdr.from = 0;
     mailHdr.length = messageLength + 1;
 }
 
@@ -382,22 +381,98 @@ bool sendMessageToAllOtherServers(string ssString, PacketHeader &pktHdr, MailHea
     }
 }
 
+bool checkValidCreate(char* name, Entity e){
+    switch (e){
+        case LOCK:
+            for(int i = 0; i < serverLockCount; ++i){
+                if (strcmp(name, serverLocks[i].name) == 0){
+                    if (!serverLocks[i].isDeleted && !serverLocks[i].deleteFlag){
+                        return true;
+                    }
+                }
+            }
+            break;
+        case CONDITION:
+            for(int i = 0; i < serverCondCount; ++i){
+                if (strcmp(name, serverConds[i].name) == 0){
+                    if (!serverConds[i].isDeleted && !serverConds[i].deleteFlag){
+                        return true;
+                    }
+                }
+            }
+            break;
+        case MONITOR:
+            for(int i = 0; i < serverMonCount; ++i){
+                if (strcmp(name, serverMons[i].name) == 0){
+                    if (!serverMons[i].isDeleted && !serverMons[i].deleteFlag){
+                        return true;
+                    }
+                }
+            }
+        break;
+    }
+
+    return false;
+}
+
+// a function to check if the current server contains the lock/CV/MV
+// returns true if current server contains the lock/CV/MV
+bool checkCurrentServerContainEntity(bool isCreate, char* name, char* &msg, int sysCode1, int entityIndex1, int entityIndex2, PacketHeader &pktHdr, MailHeader &mailHdr){
+    int index1 = entityIndex1 - 1000 * (entityIndex1/1000);
+    int index2 = entityIndex2 - 1000 * (entityIndex2/1000);
+
+    bool hasLock = validateEntityIndex(index1, LOCK);
+    bool hasCond = validateEntityIndex(index2, CONDITION);
+    bool hasMon = validateEntityIndex(index1, MONITOR);
+
+    switch(sysCode1) {
+        case 'L':
+
+            if (!serverAndMachineIdMatch(entityIndex1))
+                return false;
+            if (hasLock){
+                msg[0] = 'Y';
+            } else {
+                msg[0] = 'N';
+            }
+        break;
+        case 'C':
+            if (!serverAndMachineIdMatch(entityIndex2)
+                return false;
+            if (hasCond){
+                msg[0] = 'Y';
+            } else {
+                msg[0] = 'N';
+            }
+        break;
+        case 'M':
+            if (!serverAndMachineIdMatch(entityIndex1))
+                return false;
+            if (hasMon){
+                msg[0] = 'Y';
+            } else {
+                msg[0] = 'N';
+            }
+        break;
+    }
+}
+
 // +++++++++++++++++ UTILITY SERVER METHODS +++++++++++++++++
 
 // abstract method to send message to the client from the server
 // again, we swap the header info and send the data
-void sendMessageToClient(char* data, PacketHeader &pktHdr, MailHeader &mailHdr) {
-    redirectPktMailHeader(pktHdr, mailHdr, strlen(data));
+void sendMessageToClient(char* data, PacketHeader &pktHdr, MailHeader &mailHdr, int mailbox) {
+    redirectPktMailHeader(pktHdr, mailHdr, strlen(data), mailbox);
     bool success = postOffice->Send(pktHdr, mailHdr, data);
     if ( !success ) {
-        printf("Release::The first postOffice Send failed. You must not have the other Nachos running. Terminating Nachos.\n");
+        printf("The first postOffice Send failed. You must not have the other Nachos running. Terminating Nachos.\n");
         interrupt->Halt();
     }
 }
 
 // abstract method to send message to the client from the server
 // another helper function to encode entity index messages
-void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader &mailHdr) {
+void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader &mailHdr, int mailbox) {
     const char* tempChar = ss.str().c_str();
     // cout << "tempChar: " << ss.str() << endl;
     char replyBuffer[MaxMailSize];
@@ -408,7 +483,11 @@ void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader 
     replyBuffer[strlen(tempChar)] = '\0';
 
     //Send a reply (maybe)
-    sendMessageToClient(replyBuffer, pktHdr, mailHdr);
+    sendMessageToClient(replyBuffer, pktHdr, mailHdr, mailbox);
+}
+
+bool checkOtherServers(char* tempString){
+
 }
 
 // ++++++++++++++++++++++++++++ Locks ++++++++++++++++++++++++++++
@@ -836,7 +915,8 @@ void Server() {
     stringstream ss;
 
     char name[60];
-
+    int serverSuccessCount = 0;
+    int serverToSendTo = 0;
     while(true) {
         //Recieve the message
         ss.str("");
@@ -846,18 +926,85 @@ void Server() {
         //printf("Got \"%s\" from %d, box %d\n",buffer,pktHdr.from,mailHdr.from);
         fflush(stdout);
         //Parse the message
+        serverSuccessCount = 0;
         int entityId = -1;
         int entityIndex1 = -1;
         int entityIndex2 = -1;
         int entityIndex3 = -1;
+        // project4: init variables for server logic
+        int id = -1, mailbox = -1, value = -1, stringIndex = -1;
+        char response;
         ss << buffer;
-        ss >> sysCode1 >> sysCode2;
+        // string to store incoming message, send to other servers if necessary
+        char* tempString = ss.str().c_str();
+
+        ss >> response >> retVal >> id >> mailbox >> sysCode1 >> sysCode2 >> entityIndex1 >> entityIndex2 >> entityIndex3 >> name >> stringIndex;
+
+        if(id == -1 || mailbox == -1 || value == -1) {
+            printf("id == %d || mailbox == %d || value == %d \n\n", id, mailbox, value);
+            inerrupt->Halt();
+        }
+        int decodedMailboxNum = decodeMailbox(value);
+
+        // check if current server has what we need
+        //
+        bool currentServerContainsEntity = checkCurrentServerContainEntity(msg, sysCode1, sysCode2, entityIndex1, entityIndex2, pktHdr, mailHdr);
+
+        if (response == 'C'){
+            // response is "Check" :: return Y or N
+            sendMessageToClient(tempString, pktHdr, mailHdr, 0);
+        }else if (!currentServerContainsEntity){
+            bool gotYesResponse = checkOtherServers(tempString);
+            if (gotYesResponse){
+                // request already taken care of in another server
+                continue;
+            }else if (sysCode2 == 'C'){
+
+            }else {
+                char* reqFailed = "Request Failed!";
+                sendMessageToClient(reqFailed, pktHdr, mailHdr, mailbox);
+
+            }
+        }
+
+        if (response == 'Y'){
+            // sanity check: if we get a Y for response, the machineID should match
+            if(!serverAndMachineIdMatch(decodedMailboxNum)) {
+                printf("res == %c || id == %d || mailbox == %d || value == %d || machineId == %d \n\n", response, id, mailbox, value, machineId);
+                inerrupt->Halt();
+            }
+            cout << "--------------Server replies Y\n";
+        }else if(!serverAndMachineIdMatch(decodedMailboxNum)) {
+            bool success = sendMessageToAllOtherServers(tempString, pktHdr, mailHdr);
+            if(!success) {
+                inerrupt->Halt();
+            }
+            // receive from other servers
+            for (int i = 0; i < serverCount-1; ++i){
+                postOffice->Receive(0, &pktHdr, &mailHdr, buffer);
+                ss << buffer;
+                // string to store incoming message, send to other servers if necessary
+                string tempString = ss.str();
+
+                ss >> response >> id >> mailbox >> value >> stringIndex;
+                if (response == 'Y'){
+                    serverToSendTo = id; // TODO: delete?
+                    ++serverSuccessCount;
+                    break;
+                }
+            }
+
+        }
+
+
+
+        /* Project 3: ss >> sysCode1 >> sysCode2;
         if(sysCode2 == 'C') {
             ss >> name;
             cout << name << endl;
         } else {
             ss >> entityIndex1;
-        }
+        }*/
         // big switch statement to determine syscalls
         switch(sysCode1) {
             case 'L': // lock server calls
@@ -870,7 +1017,7 @@ void Server() {
                         ss << entityId;
                         //cout << "CreateLock_server::entityId: " << entityId << endl;
                         //Process the message
-                        sendCreateEntityMessage(ss, pktHdr, mailHdr);
+                        sendCreateEntityMessage(ss, pktHdr, mailHdr, mailbox);
                     break;
                     case 'A': // acquire lock
                         // only send reply when they can Acquire
