@@ -319,8 +319,8 @@ void serverReleaseLock(int lockIndex, PacketHeader &pktHdr, MailHeader &mailHdr)
   }
 }
 
-void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messageLength, int mailbox) {
-    pktHdr.to = pktHdr.from;
+void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messageLength, int mailbox, int pktTo) {
+    pktHdr.to = pktTo;
     mailHdr.to = mailbox;
     mailHdr.from = 0;
     mailHdr.length = messageLength + 1;
@@ -341,7 +341,7 @@ void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char*
             isCond = 1;
             break;
     }
-    redirectPktMailHeader(pktHdr, mailHdr, 7);
+    redirectPktMailHeader(pktHdr, mailHdr, strlen(data), mailHdr.from, pktHdr.from);
   stringstream ss;
   ss << pktHdr.to << ' ' << mailHdr.to << ' ' << mailHdr.from << ' ' << isCond;
 
@@ -381,7 +381,7 @@ bool sendMessageToAllOtherServers(string ssString, PacketHeader &pktHdr, MailHea
     }
 }
 
-bool checkValidCreate(char* name, Entity e){
+bool entityExists(char* name, Entity e){
     switch (e){
         case LOCK:
             for(int i = 0; i < serverLockCount; ++i){
@@ -415,11 +415,31 @@ bool checkValidCreate(char* name, Entity e){
     return false;
 }
 
+bool hasEntity(char* name, Entity e, bool containsEntity, int mailbox){
+	if (isCreate){
+		if (entityExists(name, e)){
+			msg[0] = 'Y';
+			return true;
+		}
+		msg[0] = 'N';
+		return false;
+	}
+    if (!serverAndMachineIdMatch(mailbox))
+        return false;
+    if (containsEntity){
+        msg[0] = 'Y';
+    } else {
+        msg[0] = 'N';
+    }
+}
+
 // a function to check if the current server contains the lock/CV/MV
 // returns true if current server contains the lock/CV/MV
 bool checkCurrentServerContainEntity(bool isCreate, char* name, char* &msg, int sysCode1, int entityIndex1, int entityIndex2, PacketHeader &pktHdr, MailHeader &mailHdr){
-    int index1 = entityIndex1 - 1000 * (entityIndex1/1000);
-    int index2 = entityIndex2 - 1000 * (entityIndex2/1000);
+    int index1 = decodeEntityIndex(entityIndex1);
+    int index2 = decodeEntityIndex(entityIndex2);
+    int mailbox1 = decodeMailbox(entityIndex1);
+    int mailbox2 = decodeMailbox(entityIndex2);
 
     bool hasLock = validateEntityIndex(index1, LOCK);
     bool hasCond = validateEntityIndex(index2, CONDITION);
@@ -427,32 +447,13 @@ bool checkCurrentServerContainEntity(bool isCreate, char* name, char* &msg, int 
 
     switch(sysCode1) {
         case 'L':
-
-            if (!serverAndMachineIdMatch(entityIndex1))
-                return false;
-            if (hasLock){
-                msg[0] = 'Y';
-            } else {
-                msg[0] = 'N';
-            }
+        	return hasEntity(name, LOCK, hasLock, mailbox1)){
         break;
         case 'C':
-            if (!serverAndMachineIdMatch(entityIndex2)
-                return false;
-            if (hasCond){
-                msg[0] = 'Y';
-            } else {
-                msg[0] = 'N';
-            }
+         	return hasEntity(name, CONDITION, hasCond, mailbox2)){
         break;
         case 'M':
-            if (!serverAndMachineIdMatch(entityIndex1))
-                return false;
-            if (hasMon){
-                msg[0] = 'Y';
-            } else {
-                msg[0] = 'N';
-            }
+            return hasEntity(name, MONITOR, hasMon, mailbox1)){
         break;
     }
 }
@@ -486,8 +487,41 @@ void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader 
     sendMessageToClient(replyBuffer, pktHdr, mailHdr, mailbox);
 }
 
-bool checkOtherServers(char* tempString){
+bool checkOtherServers(char* tempString, PacketHeader &pktHdr, MailHeader &mailHdr){
+	// server mailboxes are 0
+	mailHdr.to = 0;
+	mailHdr.from = 0;
+	// send to other servers
+	for(int i = 0; i < serverCount; ++i) {
+        if(i != machineId) {
+            pktHdr.to = i;
+            postOffice->Send(tempString, pktHdr, mailHdr);
+        }
+    }
+    // receive from other servers
+    for (int i = 0; i < serverCount-1; ++i){
+        postOffice->Receive(0, &pktHdr, &mailHdr, buffer);
+        ss << buffer;
+        // string to store incoming message, send to other servers if necessary
+        char replyBuffer[MaxMailSize];
+        char* tempString = ss.str().c_str();
+        strncpy(replyBuffer, tempString, strlen(tempString));
 
+        ss >> response;
+
+        if (response == 'Y'){
+        	// we found the entity on a certain server
+        	// send the message with response yes and let the server do the work
+        	pktHdr.to = pktHdr.from;
+        	mailHdr.to = 0;
+        	mailHdr.from = 0;
+        	postOffice->Send(replyBuffer, pktHdr, mailHdr);
+        	cout << "--------------Server replies Y\n";
+            return true;
+        }
+    }
+    // entity not found, return false
+    return false;
 }
 
 // ++++++++++++++++++++++++++++ Locks ++++++++++++++++++++++++++++
@@ -936,7 +970,12 @@ void Server() {
         char response;
         ss << buffer;
         // string to store incoming message, send to other servers if necessary
-        char* tempString = ss.str().c_str();
+        char tempString[MaxMailSize];
+	    char* tempChar = ss.str().c_str();
+	    for(unsigned int i = 0; i < strlen(tempChar); ++i) {
+	        tempString[i] = tempChar[i];
+	    }
+	    tempString[strlen(tempChar)] = '\0';
 
         ss >> response >> retVal >> id >> mailbox >> sysCode1 >> sysCode2 >> entityIndex1 >> entityIndex2 >> entityIndex3 >> name >> stringIndex;
 
@@ -948,56 +987,36 @@ void Server() {
 
         // check if current server has what we need
         //
-        bool currentServerContainsEntity = checkCurrentServerContainEntity(msg, sysCode1, sysCode2, entityIndex1, entityIndex2, pktHdr, mailHdr);
+        bool currentServerContainsEntity = checkCurrentServerContainEntity(tempString, sysCode1, sysCode2, entityIndex1, entityIndex2, pktHdr, mailHdr);
 
         if (response == 'C'){
             // response is "Check" :: return Y or N
             sendMessageToClient(tempString, pktHdr, mailHdr, 0);
         }else if (!currentServerContainsEntity){
+        	tempString[0] = 'C';
             bool gotYesResponse = checkOtherServers(tempString);
             if (gotYesResponse){
-                // request already taken care of in another server
+                // request already taken care of in another server which replies YES
                 continue;
-            }else if (sysCode2 == 'C'){
-
-            }else {
+            }else if (sysCode2 != 'C'){
+            	// not a create syscall and all other servers return NO
+            	// request failed
                 char* reqFailed = "Request Failed!";
+
+                pktHdr.to = id;
+                mailHdr.to = mailbox;
+                mailHdr.from = 0;
                 sendMessageToClient(reqFailed, pktHdr, mailHdr, mailbox);
-
             }
         }
 
-        if (response == 'Y'){
-            // sanity check: if we get a Y for response, the machineID should match
-            if(!serverAndMachineIdMatch(decodedMailboxNum)) {
-                printf("res == %c || id == %d || mailbox == %d || value == %d || machineId == %d \n\n", response, id, mailbox, value, machineId);
-                inerrupt->Halt();
-            }
-            cout << "--------------Server replies Y\n";
-        }else if(!serverAndMachineIdMatch(decodedMailboxNum)) {
-            bool success = sendMessageToAllOtherServers(tempString, pktHdr, mailHdr);
-            if(!success) {
-                inerrupt->Halt();
-            }
-            // receive from other servers
-            for (int i = 0; i < serverCount-1; ++i){
-                postOffice->Receive(0, &pktHdr, &mailHdr, buffer);
-                ss << buffer;
-                // string to store incoming message, send to other servers if necessary
-                string tempString = ss.str();
-
-                ss >> response >> id >> mailbox >> value >> stringIndex;
-                if (response == 'Y'){
-                    serverToSendTo = id; // TODO: delete?
-                    ++serverSuccessCount;
-                    break;
-                }
-            }
-
+        // sanity check::at this point the machineId of server and request should match
+        if(decodedMailboxNum != 0 && !serverAndMachineIdMatch(decodedMailboxNum)) {
+            printf("res == %c || id == %d || mailbox == %d || value == %d || machineId == %d \n\n", response, id, mailbox, value, machineId);
+            inerrupt->Halt();
         }
 
-
-
+            
         /* Project 3: ss >> sysCode1 >> sysCode2;
         if(sysCode2 == 'C') {
             ss >> name;
