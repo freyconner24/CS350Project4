@@ -34,6 +34,8 @@
 
 #define MAX_MON_COUNT 1000
 #define MAX_ARR_COUNT 50
+#define MAX_MAILBOX_COUNT 10
+#define MAX_CLIENT_COUNT 10
 
 void
 MailTest(int farAddr)
@@ -93,6 +95,21 @@ MailTest(int farAddr)
 struct ServerThread{
   int machineId;
   int mailboxNum;
+};
+
+struct ServerRequest{
+	ServerRequest(char* msg){
+		message = msg;
+		isEmpty = false;
+		serverRespondCount = 0;
+	};
+	ServerRequest(){
+		isEmpty = true;
+		serverRespondCount = 0;
+	};
+	bool isEmpty;
+	int serverRespondCount;
+	char* message;
 };
 
 string stringArr[10];
@@ -229,6 +246,7 @@ struct Msg{
 ServerLock serverLocks[MAX_MON_COUNT];
 ServerMon serverMons[MAX_MON_COUNT];
 ServerCond serverConds[MAX_MON_COUNT];
+ServerRequest pending[MAX_CLIENT_COUNT][MAX_MAILBOX_COUNT];
 
 // server counts of the locks, mons, and conds
 int serverLockCount = 0;
@@ -326,6 +344,13 @@ void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messag
     mailHdr.length = messageLength + 1;
 }
 
+void redirectToOriginalClient(PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+	pktHdr.to = machineId;
+    pktHdr.from = id;
+    mailHdr.to = 0;
+    mailHdr.from = mailbox;
+}
+
 void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char* data, int entityIndex, Entity e){
     List* waitQueue = NULL;
     string entityString = "";
@@ -381,7 +406,9 @@ bool sendMessageToAllOtherServers(string ssString, PacketHeader &pktHdr, MailHea
     }
 }
 
-bool entityExists(char* name, Entity e){
+bool checkEntityByName(char* name, Entity e){
+	// check entity by name because it is a create request
+	// we do not know if the lock/CV/MV is already there or not
     switch (e){
         case LOCK:
             for(int i = 0; i < serverLockCount; ++i){
@@ -415,9 +442,10 @@ bool entityExists(char* name, Entity e){
     return false;
 }
 
-bool hasEntity(char* name, Entity e, bool containsEntity, int mailbox){
+bool hasEntity(bool isCreate, char* name, Entity e, bool containsEntity, int mailbox){
+	// if it is a create request, we check if 
 	if (isCreate){
-		if (entityExists(name, e)){
+		if (checkEntityByName(name, e)){
 			msg[0] = 'Y';
 			return true;
 		}
@@ -447,13 +475,13 @@ bool checkCurrentServerContainEntity(bool isCreate, char* name, char* &msg, int 
 
     switch(sysCode1) {
         case 'L':
-        	return hasEntity(name, LOCK, hasLock, mailbox1)){
+        	return hasEntity(isCreate, name, LOCK, hasLock, mailbox1)){
         break;
         case 'C':
-         	return hasEntity(name, CONDITION, hasCond, mailbox2)){
+         	return hasEntity(isCreate, name, CONDITION, hasCond, mailbox2)){
         break;
         case 'M':
-            return hasEntity(name, MONITOR, hasMon, mailbox1)){
+            return hasEntity(isCreate, name, MONITOR, hasMon, mailbox1)){
         break;
     }
 }
@@ -487,7 +515,9 @@ void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader 
     sendMessageToClient(replyBuffer, pktHdr, mailHdr, mailbox);
 }
 
-bool checkOtherServers(char* tempString, PacketHeader &pktHdr, MailHeader &mailHdr){
+void checkOtherServers(char* tempString, PacketHeader &pktHdr, MailHeader &mailHdr){
+	// response is set to CHECK
+	tempString[0] = 'C';
 	// server mailboxes are 0
 	mailHdr.to = 0;
 	mailHdr.from = 0;
@@ -499,7 +529,7 @@ bool checkOtherServers(char* tempString, PacketHeader &pktHdr, MailHeader &mailH
         }
     }
     // receive from other servers
-    for (int i = 0; i < serverCount-1; ++i){
+    /*for (int i = 0; i < serverCount-1; ++i){
         postOffice->Receive(0, &pktHdr, &mailHdr, buffer);
         ss << buffer;
         // string to store incoming message, send to other servers if necessary
@@ -521,7 +551,7 @@ bool checkOtherServers(char* tempString, PacketHeader &pktHdr, MailHeader &mailH
         }
     }
     // entity not found, return false
-    return false;
+    return false;*/
 }
 
 // ++++++++++++++++++++++++++++ Locks ++++++++++++++++++++++++++++
@@ -532,6 +562,17 @@ int CreateLock_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeade
       sendMessageToClient("Too many locks!", pktHdr, mailHdr);
       return -1;
     }
+    // if we have the lock with the name they want to create
+    // we return the index
+
+    for (int i = 0; i < serverLockCount; ++i){
+    	bool deleteFlag = serverLocks[i].deleteFlag;
+    	bool isDeleted = serverLocks[i].isDeleted;
+    	if (strcmp(name, serverLocks[i].name) == 0 && !deleteFlag && !isDeleted){
+    		return i;
+    	}
+    }
+    
     // initialize all the values
     serverLocks[serverLockCount].deleteFlag = FALSE;
     serverLocks[serverLockCount].isDeleted = FALSE;
@@ -986,28 +1027,58 @@ void Server() {
         int decodedMailboxNum = decodeMailbox(value);
 
         // check if current server has what we need
-        //
-        bool currentServerContainsEntity = checkCurrentServerContainEntity(tempString, sysCode1, sysCode2, entityIndex1, entityIndex2, pktHdr, mailHdr);
 
-        if (response == 'C'){
-            // response is "Check" :: return Y or N
-            sendMessageToClient(tempString, pktHdr, mailHdr, 0);
-        }else if (!currentServerContainsEntity){
-        	tempString[0] = 'C';
-            bool gotYesResponse = checkOtherServers(tempString);
-            if (gotYesResponse){
-                // request already taken care of in another server which replies YES
-                continue;
-            }else if (sysCode2 != 'C'){
-            	// not a create syscall and all other servers return NO
-            	// request failed
-                char* reqFailed = "Request Failed!";
+	    bool currentServerContainsEntity = checkCurrentServerContainEntity(tempString, sysCode1, sysCode2, entityIndex1, entityIndex2, pktHdr, mailHdr);
 
-                pktHdr.to = id;
-                mailHdr.to = mailbox;
-                mailHdr.from = 0;
-                sendMessageToClient(reqFailed, pktHdr, mailHdr, mailbox);
+        switch (response){
+        	case '0':
+        		// request is sent from client
+	        	// put into pending table
+	        	pending[id][mailbox].isEmpty = false;
+	        	pending[id][mailbox].serverRespondCount = 0;
+	        	pending[id][mailbox].message = tempString;
+	        	if (!currentServerContainsEntity){
+	        		checkOtherServers(tempString);
+	        	}
+	        	continue;
+        	break;
+        	case 'C':
+	        	// response is "Check" :: return Y or N
+	            sendMessageToClient(tempString, pktHdr, mailHdr, 0);
+
+	            if (!currentServerContainsEntity) 
+	            	continue;
+        	break;
+        	case 'Y':
+	        	// request is sent from another server and the server has what we need
+	        	pending[id][mailbox].isEmpty = true;
+	        	pending[id][mailbox].serverRespondCount = 0;
+	        	pending[id][mailbox].message[0] = '\0';
+        	break;
+        	case 'N':
+        		if (pending[id][mailbox].isEmpty) {
+        			cout << "***********Pending Request Table is empty!\n";
+            		interrupt->Halt();
+        		}
+
+        		++ (pending[id][mailbox].serverRespondCount);
+        		if (pending[id][mailbox].serverRespondCount == serverCount-1){
+        			if (sysCode2 != 'C'){
+		            	// not a create syscall and all other servers return NO
+		            	// request failed
+		                char* reqFailed = "Request Failed!";
+
+		                pktHdr.to = id;
+		                mailHdr.to = mailbox;
+		                mailHdr.from = 0;
+		                sendMessageToClient(reqFailed, pktHdr, mailHdr, mailbox);
+		                continue;
+	        		}
+        		}else{
+        			continue;
+        		}
             }
+        	break;
         }
 
         // sanity check::at this point the machineId of server and request should match
@@ -1025,6 +1096,7 @@ void Server() {
             ss >> entityIndex1;
         }*/
         // big switch statement to determine syscalls
+        redirectToOriginalClient(pktHdr, mailHdr, id, mailbox);
         switch(sysCode1) {
             case 'L': // lock server calls
                 switch(sysCode2) {
