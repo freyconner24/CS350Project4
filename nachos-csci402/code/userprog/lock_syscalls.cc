@@ -20,15 +20,16 @@ void sendToServer(PacketHeader &pktHdr, MailHeader &mailHdr, char* serverCode, c
     mailHdr.to = 0;
     mailHdr.from = mailBox;
     // generating random server number
-    int serverNum = rand() % (serverCount - 1);
+    int serverNum = rand() % (serverCount);
+    // serverNum = (serverCount - 1);
+    // cout << "_____________serverNum " << serverNum << endl;
     pktHdr.to = serverNum;
 
     stringstream ss;
-	ss << serverCode;
 
 	ss << '0' << ' ' << machineId << ' ' << mailBox << ' ' << serverCode[0] << ' ' << serverCode[2] << ' ' << entityIndex1 << ' ' << entityIndex2 << ' ' << entityIndex3 << ' ' << name;
-
 	string str = ss.str();
+	cout << "str: " << str << endl;
 	char sendBuffer[64];
 
 	for(unsigned int i = 0; i < str.size(); ++i) {
@@ -36,12 +37,12 @@ void sendToServer(PacketHeader &pktHdr, MailHeader &mailHdr, char* serverCode, c
 	}
 	sendBuffer[str.size()] = '\0';
 	mailHdr.length = str.size() + 1;
-
+	// cout << "pktHdr.to: " << pktHdr.to << "mailHdr.to: " << mailHdr.to <<  "mailHdr.from: " << mailHdr.from << endl;
 	// cout << "Client::sendBuffer: " << sendBuffer << endl;
     bool success = postOffice->Send(pktHdr, mailHdr, sendBuffer);
 
     if ( !success ) {
-    	cout << serverCode << "::";
+    	// cout << serverCode << "::";
 		printf("Client::The postOffice Send failed. You must not have the other Nachos running. Terminating Nachos.\n");
 		interrupt->Halt();
 	}
@@ -81,11 +82,15 @@ int CreateLock_sys(int vaddr, int size, int appendNum) {
 	}; //copy contents of the virtual addr (ReadRegister(4)) to the name
 
     string receivedString = sendAndRecieveMessage("L C ", name, -1, -1, -1);
+    cout << "receivedString " << receivedString << endl;
     stringstream ss;
     ss << receivedString;
 
     int currentLockIndex = -1;
     ss >> currentLockIndex;
+    // std::time_t result = std::time(NULL);
+	   //  std::cout << std::asctime(std::localtime(&result))
+	   //            << result << " seconds since the Epoch\n";
 
     if(currentLockIndex == -1) {
         cout << "Client::currentLockIndex == -1" << endl;

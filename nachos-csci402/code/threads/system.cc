@@ -97,6 +97,7 @@ TimerInterruptHandler(int dummy)
 void
 Initialize(int argc, char **argv)
 {
+    srand(time(NULL));
     int argCount;
     char* debugArgs = "";
     bool randomYield = FALSE;
@@ -153,8 +154,7 @@ Initialize(int argc, char **argv)
 	    netname = atoi(*(argv + 1));
         machineId = netname;
 	    argCount = 2;
-	}
-  if (!strcmp(*argv, "-n")){
+	}else if (!strcmp(*argv, "-n")){
     ASSERT(argc > 1);
     serverCount = atoi(*(argv + 1));
     argCount = 2;
