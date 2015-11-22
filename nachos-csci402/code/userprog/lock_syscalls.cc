@@ -20,20 +20,13 @@ void sendToServer(PacketHeader &pktHdr, MailHeader &mailHdr, char* serverCode, c
     mailHdr.to = 0;
     mailHdr.from = mailBox;
     // generating random server number
-    int serverNum = srand() % (serverCount - 1);
+    int serverNum = rand() % (serverCount - 1);
     pktHdr.to = serverNum;
 
     stringstream ss;
 	ss << serverCode;
 
-  if (serverCode[0] == 'M' && serverCode[2] == 'C'){ // it is a Monitor Create and needs a name and size
-    ss << name << ' ' << entityIndex1;
-  }
-	else if(serverCode[2] == 'C') { // it is a Create and needs a name
-		ss << name;
-	} else {
-		ss << entityIndex1 << ' ' << entityIndex2 << ' ' << entityIndex3;
-	}
+	ss << '0' << ' ' << machineId << ' ' << mailBox << ' ' << serverCode[0] << ' ' << serverCode[2] << ' ' << entityIndex1 << ' ' << entityIndex2 << ' ' << entityIndex3 << ' ' << name;
 
 	string str = ss.str();
 	char sendBuffer[64];
@@ -72,7 +65,7 @@ string sendAndRecieveMessage(char* sysCode, char* name, int entityIndex1, int en
 	MailHeader mailHdr;
 	sendToServer(pktHdr, mailHdr, sysCode, name, entityIndex1, entityIndex2, entityIndex3, currentThread->mailbox);
 
-	return getFromServer(pktHdr, mailHdr, currentThread->mailBox);
+	return getFromServer(pktHdr, mailHdr, currentThread->mailbox);
 }
 
 // create lock syscall

@@ -106,6 +106,7 @@ extern SynchDisk   *synchDisk;
 extern PostOffice* postOffice;
 extern int mailboxCounter;
 extern int machineId;
+extern int serverCount;
 #endif
 
 #endif // SYSTEM_H

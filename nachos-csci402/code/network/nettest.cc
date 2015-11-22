@@ -337,10 +337,11 @@ void serverReleaseLock(int lockIndex, PacketHeader &pktHdr, MailHeader &mailHdr)
   }
 }
 
-void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messageLength, int mailbox, int pktTo) {
-    pktHdr.to = pktTo;
-    mailHdr.to = mailbox;
-    mailHdr.from = 0;
+void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messageLength) {
+    pktHdr.to = pktHdr.from;
+    int mailbox = mailHdr.to;
+    mailHdr.to = mailHdr.from;
+    mailHdr.from = mailbox;
     mailHdr.length = messageLength + 1;
 }
 
@@ -366,7 +367,7 @@ void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char*
             isCond = 1;
             break;
     }
-    redirectPktMailHeader(pktHdr, mailHdr, strlen(data), mailHdr.from, pktHdr.from);
+    redirectPktMailHeader(pktHdr, mailHdr, strlen(data));
   stringstream ss;
   ss << pktHdr.to << ' ' << mailHdr.to << ' ' << mailHdr.from << ' ' << isCond;
 
@@ -389,14 +390,14 @@ bool serverAndMachineIdMatch(int mailboxNum) {
     return mailboxNum == machineId;
 }
 
-bool sendMessageToAllOtherServers(string ssString, PacketHeader &pktHdr, MailHeader &mailHdr) {
+/*bool sendMessageToAllOtherServers(string ssString, PacketHeader &pktHdr, MailHeader &mailHdr) {
     char replyBuffer[MaxMailSize];
-    char* ssStringC = ssString.c_str();
+    const char* ssStringC = ssString.c_str();
     for(unsigned int i = 0; i < strlen(ssStringC); ++i) {
         replyBuffer[i] = ssStringC[i];
     }
 
-    replyBuffer[strlen(tempChar)] = '\0';
+    replyBuffer[strlen(replyBuffer)] = '\0';
 
     for(int i = 0; i < serverCount; ++i) {
         if(i != machineId) {
@@ -404,7 +405,7 @@ bool sendMessageToAllOtherServers(string ssString, PacketHeader &pktHdr, MailHea
             sendMessageToServer(replyBuffer, pktHdr, mailHdr);
         }
     }
-}
+}*/
 
 bool checkEntityByName(char* name, Entity e){
 	// check entity by name because it is a create request
@@ -442,7 +443,7 @@ bool checkEntityByName(char* name, Entity e){
     return false;
 }
 
-bool hasEntity(bool isCreate, char* name, Entity e, bool containsEntity, int mailbox){
+bool hasEntity(char* msg, bool isCreate, char* name, Entity e, bool containsEntity, int mailbox){
 	// if it is a create request, we check if 
 	if (isCreate){
 		if (checkEntityByName(name, e)){
@@ -456,14 +457,16 @@ bool hasEntity(bool isCreate, char* name, Entity e, bool containsEntity, int mai
         return false;
     if (containsEntity){
         msg[0] = 'Y';
+        return true;
     } else {
         msg[0] = 'N';
+        return false;
     }
 }
 
 // a function to check if the current server contains the lock/CV/MV
 // returns true if current server contains the lock/CV/MV
-bool checkCurrentServerContainEntity(bool isCreate, char* name, char* &msg, int sysCode1, int entityIndex1, int entityIndex2, PacketHeader &pktHdr, MailHeader &mailHdr){
+bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int sysCode1, int entityIndex1, int entityIndex2, PacketHeader &pktHdr, MailHeader &mailHdr){
     int index1 = decodeEntityIndex(entityIndex1);
     int index2 = decodeEntityIndex(entityIndex2);
     int mailbox1 = decodeMailbox(entityIndex1);
@@ -475,23 +478,24 @@ bool checkCurrentServerContainEntity(bool isCreate, char* name, char* &msg, int 
 
     switch(sysCode1) {
         case 'L':
-        	return hasEntity(isCreate, name, LOCK, hasLock, mailbox1)){
+        	return hasEntity(msg, isCreate, name, LOCK, hasLock, mailbox1);
         break;
         case 'C':
-         	return hasEntity(isCreate, name, CONDITION, hasCond, mailbox2)){
+         	return hasEntity(msg, isCreate, name, CONDITION, hasCond, mailbox2);
         break;
         case 'M':
-            return hasEntity(isCreate, name, MONITOR, hasMon, mailbox1)){
+            return hasEntity(msg, isCreate, name, MONITOR, hasMon, mailbox1);
         break;
     }
+    return false;
 }
 
 // +++++++++++++++++ UTILITY SERVER METHODS +++++++++++++++++
 
 // abstract method to send message to the client from the server
 // again, we swap the header info and send the data
-void sendMessageToClient(char* data, PacketHeader &pktHdr, MailHeader &mailHdr, int mailbox) {
-    redirectPktMailHeader(pktHdr, mailHdr, strlen(data), mailbox);
+void sendMessageToClient(char* data, PacketHeader &pktHdr, MailHeader &mailHdr) {
+    redirectPktMailHeader(pktHdr, mailHdr, strlen(data));
     bool success = postOffice->Send(pktHdr, mailHdr, data);
     if ( !success ) {
         printf("The first postOffice Send failed. You must not have the other Nachos running. Terminating Nachos.\n");
@@ -501,7 +505,7 @@ void sendMessageToClient(char* data, PacketHeader &pktHdr, MailHeader &mailHdr, 
 
 // abstract method to send message to the client from the server
 // another helper function to encode entity index messages
-void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader &mailHdr, int mailbox) {
+void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader &mailHdr) {
     const char* tempChar = ss.str().c_str();
     // cout << "tempChar: " << ss.str() << endl;
     char replyBuffer[MaxMailSize];
@@ -512,10 +516,10 @@ void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader 
     replyBuffer[strlen(tempChar)] = '\0';
 
     //Send a reply (maybe)
-    sendMessageToClient(replyBuffer, pktHdr, mailHdr, mailbox);
+    sendMessageToClient(replyBuffer, pktHdr, mailHdr);
 }
 
-void checkOtherServers(char* tempString, PacketHeader &pktHdr, MailHeader &mailHdr){
+void checkOtherServers(char *tempString, PacketHeader &pktHdr, MailHeader &mailHdr){
 	// response is set to CHECK
 	tempString[0] = 'C';
 	// server mailboxes are 0
@@ -525,7 +529,7 @@ void checkOtherServers(char* tempString, PacketHeader &pktHdr, MailHeader &mailH
 	for(int i = 0; i < serverCount; ++i) {
         if(i != machineId) {
             pktHdr.to = i;
-            postOffice->Send(tempString, pktHdr, mailHdr);
+            postOffice->Send(pktHdr, mailHdr, tempString);
         }
     }
     // receive from other servers
@@ -572,7 +576,7 @@ int CreateLock_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeade
     		return i;
     	}
     }
-    
+
     // initialize all the values
     serverLocks[serverLockCount].deleteFlag = FALSE;
     serverLocks[serverLockCount].isDeleted = FALSE;
@@ -1012,23 +1016,26 @@ void Server() {
         ss << buffer;
         // string to store incoming message, send to other servers if necessary
         char tempString[MaxMailSize];
-	    char* tempChar = ss.str().c_str();
+	    const char* tempChar = ss.str().c_str();
 	    for(unsigned int i = 0; i < strlen(tempChar); ++i) {
 	        tempString[i] = tempChar[i];
 	    }
 	    tempString[strlen(tempChar)] = '\0';
 
-        ss >> response >> retVal >> id >> mailbox >> sysCode1 >> sysCode2 >> entityIndex1 >> entityIndex2 >> entityIndex3 >> name >> stringIndex;
+        ss >> response >> id >> mailbox >> sysCode1 >> sysCode2 >> entityIndex1 >> entityIndex2 >> entityIndex3 >> name;
 
-        if(id == -1 || mailbox == -1 || value == -1) {
+        if(id == -1 || mailbox == -1) {
             printf("id == %d || mailbox == %d || value == %d \n\n", id, mailbox, value);
-            inerrupt->Halt();
+            interrupt->Halt();
         }
         int decodedMailboxNum = decodeMailbox(value);
 
         // check if current server has what we need
 
-	    bool currentServerContainsEntity = checkCurrentServerContainEntity(tempString, sysCode1, sysCode2, entityIndex1, entityIndex2, pktHdr, mailHdr);
+        bool isCreate = false;
+        if (sysCode2 == 'C')
+        	isCreate = true;
+	    bool currentServerContainsEntity = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, entityIndex1, entityIndex2, pktHdr, mailHdr);
 
         switch (response){
         	case '0':
@@ -1038,13 +1045,15 @@ void Server() {
 	        	pending[id][mailbox].serverRespondCount = 0;
 	        	pending[id][mailbox].message = tempString;
 	        	if (!currentServerContainsEntity){
-	        		checkOtherServers(tempString);
+	        		checkOtherServers(tempString, pktHdr, mailHdr);
 	        	}
 	        	continue;
         	break;
         	case 'C':
 	        	// response is "Check" :: return Y or N
-	            sendMessageToClient(tempString, pktHdr, mailHdr, 0);
+        		mailHdr.to = 0;
+        		mailHdr.from = 0;
+	            sendMessageToClient(tempString, pktHdr, mailHdr);
 
 	            if (!currentServerContainsEntity) 
 	            	continue;
@@ -1068,23 +1077,22 @@ void Server() {
 		            	// request failed
 		                char* reqFailed = "Request Failed!";
 
-		                pktHdr.to = id;
-		                mailHdr.to = mailbox;
-		                mailHdr.from = 0;
-		                sendMessageToClient(reqFailed, pktHdr, mailHdr, mailbox);
+		                pktHdr.from = id;
+		                mailHdr.from = mailbox;
+		                mailHdr.to = 0;
+		                sendMessageToClient(reqFailed, pktHdr, mailHdr);
 		                continue;
-	        		}
-        		}else{
-        			continue;
+	        		}else{
+        				continue;
+        			}
         		}
-            }
         	break;
         }
 
         // sanity check::at this point the machineId of server and request should match
         if(decodedMailboxNum != 0 && !serverAndMachineIdMatch(decodedMailboxNum)) {
             printf("res == %c || id == %d || mailbox == %d || value == %d || machineId == %d \n\n", response, id, mailbox, value, machineId);
-            inerrupt->Halt();
+            interrupt->Halt();
         }
 
             
@@ -1108,7 +1116,7 @@ void Server() {
                         ss << entityId;
                         //cout << "CreateLock_server::entityId: " << entityId << endl;
                         //Process the message
-                        sendCreateEntityMessage(ss, pktHdr, mailHdr, mailbox);
+                        sendCreateEntityMessage(ss, pktHdr, mailHdr);
                     break;
                     case 'A': // acquire lock
                         // only send reply when they can Acquire
