@@ -100,14 +100,17 @@ struct ServerThread{
 
 struct ServerRequest{
 	ServerRequest(char* msg){
+		gotYes = false;
 		message = msg;
 		isEmpty = false;
 		serverRespondCount = 0;
 	};
 	ServerRequest(){
+		gotYes = false;
 		isEmpty = true;
 		serverRespondCount = 0;
 	};
+	bool gotYes;
 	bool isEmpty;
 	int serverRespondCount;
 	char* message;
@@ -507,6 +510,13 @@ bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int s
         break;
     }
     return false;
+}
+
+void deletePendingRequest(int id, int mailbox){
+	pending[id][mailbox].isEmpty = true;
+	pending[id][mailbox].gotYes = false;
+	pending[id][mailbox].serverRespondCount = 0;
+	pending[id][mailbox].message[0] = '\0';
 }
 
 // +++++++++++++++++ UTILITY SERVER METHODS +++++++++++++++++
@@ -1143,12 +1153,11 @@ void Server() {
 	        	break;
 	        	case 'Y':
 	        		cout << "======== check response Y" << endl;
+	        		pending[id][mailbox].gotYes = true;
 	        		++ (pending[id][mailbox].serverRespondCount);
 	        		if (pending[id][mailbox].serverRespondCount == (serverCount-1)){
-	        			cout << "+++++++ reached serverRespondCount\n";
-        				pending[id][mailbox].isEmpty = true;
-			        	pending[id][mailbox].serverRespondCount = 0;
-			        	pending[id][mailbox].message[0] = '\0';
+	        			cout << "+++++++ reached serverRespondCount in Yes, deleting from table\n";
+        				deletePendingRequest(id, mailbox);
 				    }
 		        	// request is sent from another server and the server has what we need
 		        	continue;
@@ -1159,14 +1168,16 @@ void Server() {
 	        			cout << "***********Pending Request Table is empty!\n";
 	            		interrupt->Halt();
 	        		}
-
+	        		bool gotYesResponse = pending[id][mailbox].gotYes;
 	        		++ (pending[id][mailbox].serverRespondCount);
 	        		if (pending[id][mailbox].serverRespondCount == (serverCount-1)){
-	        			cout << "+++++++ reached serverRespondCount\n";
-	        			pending[id][mailbox].isEmpty = true;
-			        	pending[id][mailbox].serverRespondCount = 0;
-			        	pending[id][mailbox].message[0] = '\0';
-	        			if (sysCode2 != 'C'){
+
+	        			cout << "+++++++ reached serverRespondCount in No\n";
+	        			//deleting request from table
+	        			if(gotYesResponse){
+	        				deletePendingRequest(id, mailbox);
+	        				continue;
+	        			} else if ( sysCode2 != 'C'){
 			            	// not a create syscall and all other servers return NO
 			            	// request failed
 			                char* reqFailed = "Request Failed!";
@@ -1175,8 +1186,10 @@ void Server() {
 			                mailHdr.from = mailbox;
 			                mailHdr.to = 0;
 			                sendMessageToClient(reqFailed, pktHdr, mailHdr);
+			                deletePendingRequest(id, mailbox);
 			                continue;
 		        		}
+		        		
 	        		}else{
 	        			continue;
 	        		}
