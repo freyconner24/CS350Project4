@@ -251,6 +251,7 @@ ServerLock serverLocks[MAX_MON_COUNT];
 ServerMon serverMons[MAX_MON_COUNT];
 ServerCond serverConds[MAX_MON_COUNT];
 ServerRequest pending[MAX_CLIENT_COUNT][MAX_MAILBOX_COUNT];
+ServerRequest waitingReq[MAX_CLIENT_COUNT][MAX_MAILBOX_COUNT];
 
 // server counts of the locks, mons, and conds
 int serverLockCount = 0;
@@ -481,11 +482,9 @@ int encodeEntityIndex(int entityIndex){
 
 // a function to check if the current server contains the lock/CV/MV
 // returns true if current server contains the lock/CV/MV
-bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int sysCode1, int sysCode2, int entityIndex1, int entityIndex2, PacketHeader &pktHdr, MailHeader &mailHdr){
+bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int sysCode1, int entityIndex1, PacketHeader &pktHdr, MailHeader &mailHdr){
     int index1 = decodeEntityIndex(entityIndex1);
-    int index2 = decodeEntityIndex(entityIndex2);
     int mailbox1 = decodeMailbox(entityIndex1);
-    int mailbox2 = decodeMailbox(entityIndex2);
 
     bool hasLock = validateEntityIndex(index1, LOCK);
     bool hasCond = validateEntityIndex(index1, CONDITION);
@@ -496,14 +495,7 @@ bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int s
         	return hasEntity(msg, isCreate, name, LOCK, hasLock, mailbox1);
         break;
         case 'C':
-        	// if(sysCode2 == 'W') {
-       		// 	hasCond = validateEntityIndex(index2, CONDITION);
-        	// 	return 
-	        // 		(hasEntity(msg, isCreate, name, LOCK, hasLock, mailbox1)
-	        // 		&& hasEntity(msg, isCreate, name, CONDITION, hasCond, mailbox2));
-        	// } else {
-	         	return hasEntity(msg, isCreate, name, CONDITION, hasCond, mailbox1);
-        	// }
+         	return hasEntity(msg, isCreate, name, CONDITION, hasCond, mailbox1);
         break;
         case 'M':
             return hasEntity(msg, isCreate, name, MONITOR, hasMon, mailbox1);
@@ -553,6 +545,8 @@ void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader 
     //Send a reply (maybe)
     sendMessageToClient(replyBuffer, pktHdr, mailHdr);
 }
+
+
 
 void checkOtherServers(char *tempString, PacketHeader &pktHdr, MailHeader &mailHdr){
 	cout << "checking other servers\n";
@@ -1119,6 +1113,7 @@ void Server() {
         if (sysCode2 == 'C')
         	isCreate = true;
 	    bool currentServerContainsEntity = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, sysCode2, entityIndex1, entityIndex2, pktHdr, mailHdr);
+	    bool hasCond = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, sysCode2, entityIndex2, entityIndex1, pktHdr, mailHdr);
 	    // cout << tempString << endl;
 
 	    if (serverCount > 1){
@@ -1128,6 +1123,10 @@ void Server() {
 	        		// request is sent from client
 		        	// put into pending table
 	        		// cout << "&&&&&&& RESPONSE IS 0\n";
+	        		if (sysCode2 == 'W'){
+	        			stringstream ss_wait;
+						ss_cond << '0' << ' ' << machineId << ' ' << mailBox << ' ' << serverCode[0] << ' ' << serverCode[2] << ' ' << entityIndex2 << ' ' << entityIndex1 << ' ' << entityIndex3 << ' ' << name;
+	        		}
 		        	if (!currentServerContainsEntity){
 		        		pending[id][mailbox].isEmpty = false;
 			        	pending[id][mailbox].serverRespondCount = 0;
@@ -1197,22 +1196,12 @@ void Server() {
 	        }
 	    }
 
-        
-
         // sanity check::at this point the machineId of server and request should match
         if(decodedMailboxNum != 0 && !serverAndMachineIdMatch(decodedMailboxNum)) {
             printf("res == %c || id == %d || mailbox == %d || value == %d || machineId == %d \n\n", response, id, mailbox, value, machineId);
             interrupt->Halt();
         }
 
-            
-        /* Project 3: ss >> sysCode1 >> sysCode2;
-        if(sysCode2 == 'C') {
-            ss >> name;
-            cout << name << endl;
-        } else {
-            ss >> entityIndex1;
-        }*/
         // big switch statement to determine syscalls
         redirectToOriginalClient(pktHdr, mailHdr, id, mailbox, strlen(tempString));
         entityIndex1 = decodeEntityIndex(entityIndex1);
