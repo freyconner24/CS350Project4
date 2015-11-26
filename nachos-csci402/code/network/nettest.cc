@@ -1,16 +1,16 @@
 // nettest.cc
-//	Test out message delivery between two "Nachos" machines,
-//	using the Post Office to coordinate delivery.
+//  Test out message delivery between two "Nachos" machines,
+//  using the Post Office to coordinate delivery.
 //
-//	Two caveats:
-//	  1. Two copies of Nachos must be running, with machine ID's 0 and 1:
-//		./nachos -m 0 -o 1 &
-//		./nachos -m 1 -o 0 &
+//  Two caveats:
+//    1. Two copies of Nachos must be running, with machine ID's 0 and 1:
+//    ./nachos -m 0 -o 1 &
+//    ./nachos -m 1 -o 0 &
 //
-//	  2. You need an implementation of condition variables,
-//	     which is *not* provided as part of the baseline threads
-//	     implementation.  The Post Office won't work without
-//	     a correct implementation of condition variables.
+//    2. You need an implementation of condition variables,
+//       which is *not* provided as part of the baseline threads
+//       implementation.  The Post Office won't work without
+//       a correct implementation of condition variables.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation
@@ -27,11 +27,11 @@
 #include <ctime>
 
 // Test out message delivery, by doing the following:
-//	1. send a message to the machine with ID "farAddr", at mail box #0
-//	2. wait for the other machine's message to arrive (in our mailbox #0)
-//	3. send an acknowledgment for the other machine's message
-//	4. wait for an acknowledgement from the other machine to our
-//	    original message
+//  1. send a message to the machine with ID "farAddr", at mail box #0
+//  2. wait for the other machine's message to arrive (in our mailbox #0)
+//  3. send an acknowledgment for the other machine's message
+//  4. wait for an acknowledgement from the other machine to our
+//      original message
 
 #define MAX_MON_COUNT 1000
 #define MAX_ARR_COUNT 50
@@ -99,21 +99,21 @@ struct ServerThread{
 };
 
 struct ServerRequest{
-	ServerRequest(char* msg){
-		gotYes = false;
-		message = msg;
-		isEmpty = false;
-		serverRespondCount = 0;
-	};
-	ServerRequest(){
-		gotYes = false;
-		isEmpty = true;
-		serverRespondCount = 0;
-	};
-	bool gotYes;
-	bool isEmpty;
-	int serverRespondCount;
-	char* message;
+  ServerRequest(char* msg){
+    gotYes = false;
+    message = msg;
+    isEmpty = false;
+    serverRespondCount = 0;
+  };
+  ServerRequest(){
+    gotYes = false;
+    isEmpty = true;
+    serverRespondCount = 0;
+  };
+  bool gotYes;
+  bool isEmpty;
+  int serverRespondCount;
+  char* message;
 };
 
 string stringArr[10];
@@ -246,12 +246,36 @@ struct Msg{
     char* data;
 };
 
+struct WaitRequest{
+    WaitRequest(){
+        isEmpty = true;
+        hasLock = false;
+        hasCond = false;
+        failed = false;
+        lockServerOwner = -1;
+        condServerOwner = -1;
+        msg = NULL;
+        lockRespondCount = -1;
+        condRespondCount = -1;
+    };
+    bool isEmpty;
+    bool failed;
+    bool hasLock;   
+    bool hasCond;
+    int lockServerOwner;
+    int condServerOwner;
+    char* msg;
+    int lockRespondCount;
+    int condRespondCount;
+    ServerThread lockClientOwner;
+};
+
 // arrays of all of the monitor variables
 ServerLock serverLocks[MAX_MON_COUNT];
 ServerMon serverMons[MAX_MON_COUNT];
 ServerCond serverConds[MAX_MON_COUNT];
 ServerRequest pending[MAX_CLIENT_COUNT][MAX_MAILBOX_COUNT];
-ServerRequest waitingReq[MAX_CLIENT_COUNT][MAX_MAILBOX_COUNT];
+WaitRequest waitRequest[MAX_CLIENT_COUNT][MAX_MAILBOX_COUNT];
 
 // server counts of the locks, mons, and conds
 int serverLockCount = 0;
@@ -277,7 +301,7 @@ bool serverAndMachineIdMatch(int mailboxNum) {
 enum Entity { LOCK, CONDITION, MONITOR };
 // make sure that we were handed a valid lock
 bool validateEntityIndex(int entityIndex, Entity e) {
-	entityIndex = decodeEntityIndex(entityIndex);
+  entityIndex = decodeEntityIndex(entityIndex);
     string entityType = "";
     int entityCount = -1;
     bool isDeleted = FALSE;
@@ -305,9 +329,9 @@ bool validateEntityIndex(int entityIndex, Entity e) {
     }
 
     if (isDeleted){ // check if lock is deleted
-  		DEBUG('l',"    %s number %d already destroyed\n", entityIndex);
-  		return FALSE;
-  	}
+      DEBUG('l',"    %s number %d already destroyed\n", entityIndex);
+      return FALSE;
+    }
     return TRUE;
 }
 
@@ -365,7 +389,7 @@ void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messag
 }
 
 void redirectToOriginalClient(PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, int messageLength){
-	pktHdr.to = machineId;
+  pktHdr.to = machineId;
     pktHdr.from = id;
     mailHdr.to = 0;
     mailHdr.from = mailbox;
@@ -416,8 +440,8 @@ void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char*
 }*/
 
 bool checkEntityByName(char* name, Entity e){
-	// check entity by name because it is a create request
-	// we do not know if the lock/CV/MV is already there or not
+  // check entity by name because it is a create request
+  // we do not know if the lock/CV/MV is already there or not
     switch (e){
         case LOCK:
             for(int i = 0; i < serverLockCount; ++i){
@@ -452,19 +476,19 @@ bool checkEntityByName(char* name, Entity e){
 }
 
 bool hasEntity(char* msg, bool isCreate, char* name, Entity e, bool containsEntity, int mailbox){
-	// if it is a create request, we check if 
-	cout << "--------- hasEntity::msg: " << msg << endl;
-	if (isCreate){
-		cout << "isCreate" << endl;
-		if (checkEntityByName(name, e)){
-			msg[0] = 'Y';
-			return true;
-		}
-		msg[0] = 'N';
-		return false;
-	}
+  // if it is a create request, we check if
+  cout << "--------- hasEntity::msg: " << msg << endl;
+  if (isCreate){
+    cout << "isCreate" << endl;
+    if (checkEntityByName(name, e)){
+      msg[0] = 'Y';
+      return true;
+    }
+    msg[0] = 'N';
+    return false;
+  }
     if (!serverAndMachineIdMatch(mailbox)) {
-    	msg[0] = 'N';
+      msg[0] = 'N';
         return false;
     }
     if (containsEntity){
@@ -477,12 +501,12 @@ bool hasEntity(char* msg, bool isCreate, char* name, Entity e, bool containsEnti
 }
 
 int encodeEntityIndex(int entityIndex){
-	return (machineId*1000 + entityIndex);
+  return (machineId*1000 + entityIndex);
 }
 
 // a function to check if the current server contains the lock/CV/MV
 // returns true if current server contains the lock/CV/MV
-bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int sysCode1, int entityIndex1, PacketHeader &pktHdr, MailHeader &mailHdr){
+bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int sysCode1, int entityIndex1){
     int index1 = decodeEntityIndex(entityIndex1);
     int mailbox1 = decodeMailbox(entityIndex1);
 
@@ -492,10 +516,10 @@ bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int s
 
     switch(sysCode1) {
         case 'L':
-        	return hasEntity(msg, isCreate, name, LOCK, hasLock, mailbox1);
+          return hasEntity(msg, isCreate, name, LOCK, hasLock, mailbox1);
         break;
         case 'C':
-         	return hasEntity(msg, isCreate, name, CONDITION, hasCond, mailbox1);
+          return hasEntity(msg, isCreate, name, CONDITION, hasCond, mailbox1);
         break;
         case 'M':
             return hasEntity(msg, isCreate, name, MONITOR, hasMon, mailbox1);
@@ -505,10 +529,10 @@ bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int s
 }
 
 void deletePendingRequest(int id, int mailbox){
-	pending[id][mailbox].isEmpty = true;
-	pending[id][mailbox].gotYes = false;
-	pending[id][mailbox].serverRespondCount = 0;
-	pending[id][mailbox].message[0] = '\0';
+  pending[id][mailbox].isEmpty = true;
+  pending[id][mailbox].gotYes = false;
+  pending[id][mailbox].serverRespondCount = 0;
+  pending[id][mailbox].message[0] = '\0';
 }
 
 // +++++++++++++++++ UTILITY SERVER METHODS +++++++++++++++++
@@ -521,9 +545,9 @@ void sendMessageToClient(char* data, PacketHeader &pktHdr, MailHeader &mailHdr) 
     cout << "dataaaaa " << data << "\nstrlen(data) " << strlen(data) << endl;
     bool success = postOffice->Send(pktHdr, mailHdr, data);
     if ( !success ) {
-    	// std::time_t result = std::time(NULL);
-	    // std::cout << std::asctime(std::localtime(&result))
-	    //           << result << " seconds since the Epoch\n";
+      // std::time_t result = std::time(NULL);
+      // std::cout << std::asctime(std::localtime(&result))
+      //           << result << " seconds since the Epoch\n";
         printf("The first postOffice Send failed. You must not have the other Nachos running. Terminating Nachos.\n");
         interrupt->Halt();
     }
@@ -532,7 +556,7 @@ void sendMessageToClient(char* data, PacketHeader &pktHdr, MailHeader &mailHdr) 
 // abstract method to send message to the client from the server
 // another helper function to encode entity index messages
 void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader &mailHdr) {
-	// cout << "breaking here?\n";
+  // cout << "breaking here?\n";
     const char* tempChar = ss.str().c_str();
     // cout << "tempChar: " << ss.str() << endl;
     char replyBuffer[MaxMailSize];
@@ -549,21 +573,21 @@ void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader 
 
 
 void checkOtherServers(char *tempString, PacketHeader &pktHdr, MailHeader &mailHdr){
-	cout << "checking other servers\n";
-	// cout << "======tempString and length "<< tempString << " " << strlen(tempString) << endl;
-	// response is set to CHECK
-	tempString[0] = 'C';
-	// server mailboxes are 0
-	mailHdr.to = 0;
-	mailHdr.from = 0;
-	mailHdr.length = strlen(tempString) + 1;
-	// send to other servers
-	// cout << "====== servercount "<< serverCount << endl;
-	// cout << "====== machineId "<< machineId << endl;
-	for(int i = 0; i < serverCount; ++i) {
-		// cout << "====== checking other servers::forloop: " << i << endl;
+  cout << "checking other servers\n";
+  // cout << "======tempString and length "<< tempString << " " << strlen(tempString) << endl;
+  // response is set to CHECK
+  tempString[0] = 'C';
+  // server mailboxes are 0
+  mailHdr.to = 0;
+  mailHdr.from = 0;
+  mailHdr.length = strlen(tempString) + 1;
+  // send to other servers
+  // cout << "====== servercount "<< serverCount << endl;
+  // cout << "====== machineId "<< machineId << endl;
+  for(int i = 0; i < serverCount; ++i) {
+    // cout << "====== checking other servers::forloop: " << i << endl;
         if(i != machineId) {
-        	// cout << "====== sending to machineId: " << i << endl;
+          // cout << "====== sending to machineId: " << i << endl;
             pktHdr.to = i;
             pktHdr.from = machineId;
             // cout << pktHdr.to << ' ' << pktHdr.from << ' ' << mailHdr.to << ' ' << mailHdr.from << endl;
@@ -582,13 +606,13 @@ void checkOtherServers(char *tempString, PacketHeader &pktHdr, MailHeader &mailH
         ss >> response;
 
         if (response == 'Y'){
-        	// we found the entity on a certain server
-        	// send the message with response yes and let the server do the work
-        	pktHdr.to = pktHdr.from;
-        	mailHdr.to = 0;
-        	mailHdr.from = 0;
-        	postOffice->Send(replyBuffer, pktHdr, mailHdr);
-        	cout << "--------------Server replies Y\n";
+          // we found the entity on a certain server
+          // send the message with response yes and let the server do the work
+          pktHdr.to = pktHdr.from;
+          mailHdr.to = 0;
+          mailHdr.from = 0;
+          postOffice->Send(replyBuffer, pktHdr, mailHdr);
+          cout << "--------------Server replies Y\n";
             return true;
         }
     }
@@ -600,7 +624,7 @@ void checkOtherServers(char *tempString, PacketHeader &pktHdr, MailHeader &mailH
 
 // create lock server call
 int CreateLock_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeader &mailHdr) {
-	cout << "====== Server::Entered CreateLock_server: " << endl;
+  cout << "====== Server::Entered CreateLock_server: " << endl;
     if (serverLockCount < 0 ||serverLockCount >= MAX_LOCK_COUNT){
       cout << "======= INVALID LOCK" << endl;
       sendMessageToClient("Too many locks!", pktHdr, mailHdr);
@@ -612,13 +636,13 @@ int CreateLock_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeade
     bool deleteFlag;
     bool isDeleted;
     for (int i = 0; i < serverLockCount; ++i){
-    	deleteFlag = serverLocks[i].deleteFlag;
-    	isDeleted = serverLocks[i].isDeleted;
-    	if (strcmp(name, serverLocks[i].name) == 0 && !isDeleted){
-    		// cout << serverLocks[i].name << " returning 0?\n";
-    		// cout << "name == serverLocks[].name " << strcmp(name, serverLocks[i].name) << endl;
-    		return encodeEntityIndex(i);
-    	}
+      deleteFlag = serverLocks[i].deleteFlag;
+      isDeleted = serverLocks[i].isDeleted;
+      if (strcmp(name, serverLocks[i].name) == 0 && !isDeleted){
+        // cout << serverLocks[i].name << " returning 0?\n";
+        // cout << "name == serverLocks[].name " << strcmp(name, serverLocks[i].name) << endl;
+        return encodeEntityIndex(i);
+      }
     }
 
     // initialize all the values
@@ -851,7 +875,221 @@ int CreateCondition_server(char* name, int appendNum, PacketHeader &pktHdr, Mail
 }
 
 // wait condition server call
-void Wait_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr) {
+void Wait_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
+  ServerThread thread;
+  thread.machineId = id;
+  thread.mailboxNum = mailbox;
+  ServerLock conditionLock = serverLocks[lockIndex];
+  ServerLock *waitingLock = &(serverLocks[serverConds[conditionIndex].waitingLockIndex]);
+  int tempPktTo =pktHdr.to;
+  int tempMailTo =mailHdr.to;
+  int tempMailFrom =mailHdr.from;
+  pktHdr.to = machineId;
+  pktHdr.from = id;
+  mailHdr.to = 0;
+  mailHdr.from = mailbox;
+  if(!validateEntityIndex(lockIndex, LOCK)) { //long sanity checks with both locks and conditions
+    sendMessageToClient("Invalid lock index!", pktHdr, mailHdr);
+  }else if(!validateEntityIndex(conditionIndex, CONDITION)) {
+    sendMessageToClient("Invalid cond index!", pktHdr, mailHdr);
+  } else if (!(serverLocks[lockIndex].lockOwner == thread)){
+    sendMessageToClient("Lock is not acquired!", pktHdr, mailHdr);
+  }else if (serverConds[conditionIndex].deleteFlag){
+    sendMessageToClient("Cond will be destroyed, can't wait!", pktHdr, mailHdr);
+  }else if(!serverConds[conditionIndex].hasWaitingLock) {
+      //no one waiting, set and wait directly
+      waitingLock = &conditionLock;
+      serverConds[conditionIndex].waitingLockIndex = lockIndex;
+      serverConds[conditionIndex].hasWaitingLock = TRUE;
+  }else if(!(*waitingLock == conditionLock)){
+      sendMessageToClient("No permission to wait!", pktHdr, mailHdr);
+      return;
+  }
+  // add the message so that we could pass it when we get signaled
+  appendMessageToEntityQueue(pktHdr, mailHdr, "Finished Waiting!", conditionIndex, CONDITION);
+  pktHdr.to = tempPktTo;
+  mailHdr.to = tempMailTo;
+  mailHdr.from = tempMailFrom;
+  // use the saved headers to release the lock
+  serverReleaseLock(lockIndex, pktHdr, mailHdr); // not the syscall, the helper function
+}
+
+void Just_Release(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    int decodedLockIndex = decodeEntityIndex(lockIndex);
+    int decodedCondIndex = decodeEntityIndex(conditionIndex);
+
+    cout << "Releasing lock in server Release\n";
+    if(!serverLocks[lockIndex].waitQueue->IsEmpty()) //lock waitQueue is not empty
+    {
+        string* msg;
+        int stringIndex;
+        stringstream ss;
+        msg = (string*) serverLocks[decodedLockIndex].waitQueue->Remove();
+        ss << *msg;
+        cout << *msg << endl;
+        ss >> pktHdr.to;
+        ss >> mailHdr.to;
+        ss >> mailHdr.from;
+        serverLocks[decodedLockIndex].lockOwner.machineId = pktHdr.to; //unset ownership
+        serverLocks[decodedLockIndex].lockOwner.mailboxNum = mailHdr.to; //unset ownership
+        mailHdr.length = 8;
+        postOffice->Send(pktHdr, mailHdr, "Acquired");
+    }
+    else
+    {
+        serverLocks[decodedLockIndex].lockStatus = FREE; //make lock available
+        serverLocks[decodedLockIndex].lockOwner.machineId = -1; //unset ownership
+        serverLocks[decodedLockIndex].lockOwner.mailboxNum = -1; //unset ownership
+        cout << "Lock released after \n";
+    }
+}
+
+
+void Just_Wait(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    int decodedCondIndex = decodeEntityIndex(conditionIndex);
+    ServerThread thread;
+    thread.machineId = id;
+    thread.mailboxNum = mailbox;
+    if (waitRequest[id][mailbox].condServerOwner == machineId){
+        if (!serverConds[decodedCondIndex].hasWaitingLock){
+            serverConds[decodedCondIndex].waitingLockIndex = lockIndex;
+            serverConds[decodedCondIndex].hasWaitingLock = TRUE;
+        }
+        pktHdr.to = machineId;
+        pktHdr.from = id;
+        mailHdr.to = 0;
+        mailHdr.from = mailbox;
+        appendMessageToEntityQueue(pktHdr, mailHdr, "Finished Waiting!", conditionIndex, CONDITION);
+        releaseLockMoreThanOne_server(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
+    } else {
+        cout << "ERROR IN JUST WAIT, OWNER != MACHINEID\n";
+        interrupt->Halt();
+    }
+}
+
+void Just_Acquire(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    //lockIndex has to be decoded so that we access the correct index instead of the index with server Id
+    int decodedLockIndex = decodeEntityIndex(lockIndex);
+    // headers will be redirected in sendmessagetoclient, so we have to treat it as 'received' on server from client
+
+    pktHdr.to = machineId;
+    pktHdr.from = id;
+    mailHdr.to = 0;
+    mailHdr.from = mailbox;
+    if(serverLocks[decodedLockIndex].lockStatus == FREE) //lock is available
+    {
+        //I can have the lock
+        //cout << "***********************" << endl;
+        serverLocks[decodedLockIndex].lockStatus = BUSY; //make state BUSY
+        //serverLocks[lockIndex].lockOwner = serverCurrentThread; //make myself the owner
+        serverLocks[decodedLockIndex].lockOwner.machineId = id;
+        serverLocks[decodedLockIndex].lockOwner.mailboxNum = mailbox;
+        
+        sendMessageToClient("You got the lock!", pktHdr, mailHdr); //send the message to the client
+    }
+    else //lock is busy
+    {
+        appendMessageToEntityQueue(pktHdr, mailHdr, "You got the lock!", lockIndex, LOCK); //put the message on the waitqueue so that it can be sent when someone releases the lock
+    }
+}
+
+void Just_Signal(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, int ogClientId, int ogClientMailbox){
+    int decodedCondIndex = decodeEntityIndex(conditionIndex);
+    string* msg;
+    stringstream ss;
+    msg = (string*) (serverConds[decodedCondIndex].waitQueue->Remove());//Hung: add myself to Condition Variable waitQueue
+
+    //cout << "here?\n" << pktHdr.from << ' ' << mailHdr.from << ' ' << mailHdr.to << endl;
+    AcquireMoreThanOne_server(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
+    pktHdr.to = machineId;
+    pktHdr.from = ogClientId;
+    mailHdr.from = ogClientMailbox;
+    mailHdr.to = 0;
+    mailHdr.length = 9;
+    //cout << "here?\n" << pktHdr.to << ' ' << mailHdr.to << ' ' << mailHdr.from << endl;
+
+    sendMessageToClient("Signalled", pktHdr, mailHdr);
+    if(serverConds[conditionIndex].waitQueue->IsEmpty()){
+        serverConds[conditionIndex].hasWaitingLock = FALSE; //reset if is empty
+        serverConds[conditionIndex].waitingLockIndex = -1;
+    }
+}
+
+void actionOnRemoteServer(stringstream ss, bool isLock, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    char* tempLockString = new char [strlen(ss.str().c_str())+1];
+    strncpy(tempLockString, ss.str().c_str(), strlen(ss.str().c_str()));
+    tempLockString[strlen(ss.str().c_str())] = '\0';
+    if (isLock){
+        pktHdr.to = waitRequest[id][mailbox].lockServerOwner;
+    }else{
+        pktHdr.to = waitRequest[id][mailbox].condServerOwner;
+    }
+    pktHdr.from = machineId;
+    mailHdr.to = 0;
+    mailHdr.from = 0;
+    postOffice->Send(pktHdr, mailHdr, tempLockString);
+}
+
+void releaseOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    stringstream ss;
+    ss << 'R' << ' ' << machineId << ' ' << mailbox << ' ' << 'C' << ' ' << 'W' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname";
+    actionOnRemoteServer(ss, TRUE, pktHdr, mailHdr, id, mailbox);
+}
+
+void waitOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    stringstream ss;
+    ss << 'W' << ' ' << machineId << ' ' << mailbox << ' ' << 'C' << ' ' << 'W' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname";
+    actionOnRemoteServer(ss, FALSE, pktHdr, mailHdr, id, mailbox);
+}
+
+// wait condition server call
+void acquireOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    stringstream ss;
+    ss << 'A' << ' ' << machineId << ' ' << mailbox << ' ' << 'C' << ' ' << 'S' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname";
+    actionOnRemoteServer(ss, TRUE, pktHdr, mailHdr, id, mailbox);
+}
+
+void signalOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, int ogClientId, int ogClientMailbox){
+    stringstream ss;
+    ss << 'S' << ' ' << machineId << ' ' << mailbox << ' ' << 'C' << ' ' << 'S' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname" << ' ' << ogClientId << ' ' << ogClientMailbox;
+    actionOnRemoteServer(ss, FALSE, pktHdr, mailHdr, id, mailbox);
+}
+
+// wait condition server call
+void SignalMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, int ogClientId, int ogClientMailbox) {
+    if (waitRequest[id][mailbox].condServerOwner == machineId){
+        Just_Signal(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox, ogClientId, ogClientMailbox);
+    } else {
+        signalOnRemoteServer(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox, ogClientId, ogClientMailbox);
+    }
+}
+
+void WaitMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
+    if (waitRequest[id][mailbox].condServerOwner == machineId){
+        Just_Wait(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
+    } else {
+        waitOnRemoteServer(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
+    }
+}
+
+void AcquireMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
+    if (waitRequest[id][mailbox].lockServerOwner == machineId){
+        Just_Acquire(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
+    } else {
+        acquireOnRemoteServer(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
+    }
+}
+
+void releaseLockMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    if (waitRequest[id][mailbox].lockServerOwner == machineId){
+        Just_Release(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
+    } else {
+        releaseOnRemoteServer(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
+    }
+}
+
+// wait condition server call
+void Wait_without_release(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr) {
   ServerThread thread;
   thread.machineId = pktHdr.from;
   thread.mailboxNum = mailHdr.from;
@@ -916,8 +1154,8 @@ void Signal_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, Mail
     sendMessageToClient("Signalled", pktHdr, mailHdr);
   }
   if(serverConds[conditionIndex].waitQueue->IsEmpty()){
-    serverConds[conditionIndex].hasWaitingLock == FALSE; //reset if is empty
-    serverConds[conditionIndex].waitingLockIndex == -1;
+    serverConds[conditionIndex].hasWaitingLock = FALSE; //reset if is empty
+    serverConds[conditionIndex].waitingLockIndex = -1;
   }
 }
 
@@ -1007,6 +1245,56 @@ void DestroyCondition_server(int conditionIndex, PacketHeader &pktHdr, MailHeade
   }
 }
 
+void lookForLockOnOtherServers(int machinId, int mailBox, char sysCode1, int entityIndex1, int entityIndex2, int entityIndex3, char* name, PacketHeader &pktHdr, MailHeader &mailHdr) {
+    //We don't have the lock on current server
+    cout << "======= Sending to other servers::looking for lock in wait" << endl;
+    stringstream ss_lock;
+    ss_lock << 'C' << ' ' << machineId << ' ' << mailBox << ' ' << sysCode1 << ' ' << 'L' << ' ' << entityIndex1 << ' ' << entityIndex2 << ' ' << entityIndex3 << ' ' << name;
+    char* tempLockString = new char [strlen(ss_lock.str().c_str())+1];
+    strncpy(tempLockString, ss_lock.str().c_str(), strlen(ss_lock.str().c_str()));
+    tempLockString[strlen(ss_lock.str().c_str())] = '\0';
+    checkOtherServers(tempLockString, pktHdr, mailHdr);
+}
+
+void lookForLockLogic(bool currentServerHasLock, int id, int mailbox, char sysCode1, int entityIndex1, int entityIndex2, int entityIndex3, char* name, PacketHeader &pktHdr, MailHeader &mailHdr){
+    if(currentServerHasLock) {
+        cout << "      initial server has Lock" << endl;
+        waitRequest[id][mailbox].hasLock = true;
+        waitRequest[id][mailbox].lockRespondCount = serverCount-1;
+        waitRequest[id][mailbox].lockServerOwner = machineId;
+        // do work
+    } else {
+        cout << "      initial server doesn't have Lock" << endl;
+        cout << "      = checkOtherServers..." << endl;
+        lookForLockOnOtherServers(machineId, mailbox, sysCode1, entityIndex1, entityIndex2, entityIndex3, name, pktHdr, mailHdr);
+    }
+}
+
+void deleteWaitingRequest(int id, int mailbox){
+    waitRequest[id][mailbox].isEmpty = true;
+    waitRequest[id][mailbox].failed = false;
+    waitRequest[id][mailbox].hasLock = false;   
+    waitRequest[id][mailbox].hasCond = false;
+    waitRequest[id][mailbox].lockServerOwner = -1;
+    waitRequest[id][mailbox].condServerOwner = -1;
+    waitRequest[id][mailbox].msg[0] = '\0';
+    waitRequest[id][mailbox].lockRespondCount = -1;
+    waitRequest[id][mailbox].condRespondCount = -1;
+    waitRequest[id][mailbox].lockClientOwner.machineId = -1;
+    waitRequest[id][mailbox].lockClientOwner.mailboxNum = -1;
+}
+
+void waitRequestFail(int id, int mailbox, PacketHeader &pktHdr, MailHeader &mailHdr){
+    char* reqFailed = "  waitRequestFail!";
+    waitRequest[id][mailbox].failed = true;
+    pktHdr.to = machineId;
+    pktHdr.from = id;
+    mailHdr.from = mailbox;
+    mailHdr.to = 0;
+    deleteWaitingRequest(id,mailbox);
+    sendMessageToClient(reqFailed, pktHdr, mailHdr);
+}
+
 // +++++++++++++++++ ENCODINGS +++++++++++++++++++
 
 // CreateLock:       "L C name"
@@ -1031,17 +1319,17 @@ void Server() {
     MailHeader mailHdr; // Mail
     /*
     for (int i = 0; i < 1000000; ++i){
-    	currentThread->Yield();
+      currentThread->Yield();
     }
-    
+
     mailHdr.to = 0;
-	mailHdr.from = 0;
-	mailHdr.length = 5;
+  mailHdr.from = 0;
+  mailHdr.length = 5;
 
     char* testString = "test";
     for (int i = 0; i < serverCount; ++i){
-    	if(i != machineId) {
-        	cout << "====== sending to machineId: " << i << endl;
+      if(i != machineId) {
+          cout << "====== sending to machineId: " << i << endl;
             pktHdr.to = i;
             pktHdr.from = machineId;
             testString[4] = (char) (i+'0');
@@ -1059,13 +1347,20 @@ void Server() {
       serverConds[i].hasWaitingLock = FALSE;
       serverLocks[i].lockStatus = FREE;
     }
-    
+
     char buffer[MaxMailSize];
     stringstream ss;
 
     char name[60];
     int serverSuccessCount = 0;
     int serverToSendTo = 0;
+    int entityId = -1;
+    int entityIndex1 = -1;
+    int entityIndex2 = -1;
+    int entityIndex3 = -1;
+    int id = -1, mailbox = -1, value = -1, stringIndex = -1;
+    int ogClientId = -1;
+    int ogClientMailbox = -1;
     while(true) {
         //Recieve the message
         ss.str("");
@@ -1078,27 +1373,28 @@ void Server() {
         fflush(stdout);
         //Parse the message
         serverSuccessCount = 0;
-        int entityId = -1;
-        int entityIndex1 = -1;
-        int entityIndex2 = -1;
-        int entityIndex3 = -1;
         // project4: init variables for server logic
-        int id = -1, mailbox = -1, value = -1, stringIndex = -1;
+        ogClientId = pktHdr.from;
+        ogClientMailbox = mailHdr.from;
         char response;
         ss << buffer;
         // string to store incoming message, send to other servers if necessary
         char tempString[MaxMailSize];
-	    const char* tempChar = ss.str().c_str();
-	    for(unsigned int i = 0; i < strlen(tempChar); ++i) {
-	        tempString[i] = tempChar[i];
-	    }
-	    tempString[strlen(tempChar)] = '\0';
+        const char* tempChar = ss.str().c_str();
+        for(unsigned int i = 0; i < strlen(tempChar); ++i) {
+            tempString[i] = tempChar[i];
+        }
+        tempString[strlen(tempChar)] = '\0';
 
         ss >> response >> id >> mailbox >> sysCode1 >> sysCode2 >> entityIndex1 >> entityIndex2 >> entityIndex3 >> name;
+        if (response == 'S'){
+            ss >> ogClientId >> ogClientMailbox;
+        }
+
         cout << "======= tempString: " << tempString << endl;
         // cout << "!!!!! client name " << name << endl;
         if (serverLockCount>0){
-        //	        cout << "serverLocks.name " << serverLocks[serverLockCount-1].name << endl;
+        //          cout << "serverLocks.name " << serverLocks[serverLockCount-1].name << endl;
 
         }
         if(id == -1 || mailbox == -1) {
@@ -1107,94 +1403,261 @@ void Server() {
         }
         int decodedMailboxNum = decodeMailbox(value);
 
-        // check if current server has what we need
-
         bool isCreate = false;
-        if (sysCode2 == 'C')
-        	isCreate = true;
-	    bool currentServerContainsEntity = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, sysCode2, entityIndex1, entityIndex2, pktHdr, mailHdr);
-	    bool hasCond = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, sysCode2, entityIndex2, entityIndex1, pktHdr, mailHdr);
-	    // cout << tempString << endl;
+        if (sysCode2 == 'C') {
+            isCreate = true;
+        }
 
-	    if (serverCount > 1){
-	    	switch (response){
-	        	case '0':
-	        		cout << "======== check response 0" << endl;
-	        		// request is sent from client
-		        	// put into pending table
-	        		// cout << "&&&&&&& RESPONSE IS 0\n";
-	        		if (sysCode2 == 'W'){
-	        			stringstream ss_wait;
-						ss_cond << '0' << ' ' << machineId << ' ' << mailBox << ' ' << serverCode[0] << ' ' << serverCode[2] << ' ' << entityIndex2 << ' ' << entityIndex1 << ' ' << entityIndex3 << ' ' << name;
-	        		}
-		        	if (!currentServerContainsEntity){
-		        		pending[id][mailbox].isEmpty = false;
-			        	pending[id][mailbox].serverRespondCount = 0;
-			        	pending[id][mailbox].message = new char[strlen(tempString)+1];
-			        	strncpy(pending[id][mailbox].message, tempString, strlen(tempString));
-			        	pending[id][mailbox].message[strlen(tempString)] = '\0';
-		        		cout << "======= Sending to other servers" << endl;
-		        		checkOtherServers(tempString, pktHdr, mailHdr);
-		        		continue;
-		        	}
-		        	// cout << "&&&&&&& after checkservers\n";
-	        	break;
-	        	case 'C':
-	        		cout << "======== check response C" << endl;
-		        	// response is "Check" :: return Y or N
-	        		mailHdr.to = 0;
-	        		mailHdr.from = 0;
-	        		cout << "======= in check::tempString: " << tempString << endl;
-		            sendMessageToClient(tempString, pktHdr, mailHdr);
+        bool isWait = false;
+        if (sysCode == 'C' && sysCode2 == 'W') {
+            isWait = true;
+        }
 
-		            if (!currentServerContainsEntity) 
-		            	continue;
-	        	break;
-	        	case 'Y':
-	        		cout << "======== check response Y" << endl;
-	        		pending[id][mailbox].gotYes = true;
-	        		++ (pending[id][mailbox].serverRespondCount);
-	        		if (pending[id][mailbox].serverRespondCount == (serverCount-1)){
-	        			cout << "+++++++ reached serverRespondCount in Yes, deleting from table\n";
-        				deletePendingRequest(id, mailbox);
-				    }
-		        	// request is sent from another server and the server has what we need
-		        	continue;
-	        	break;
-	        	case 'N':
-	        		cout << "======== check response N" << endl;
-	        		if (pending[id][mailbox].isEmpty) {
-	        			cout << "***********Pending Request Table is empty!\n";
-	            		interrupt->Halt();
-	        		}
-	        		bool gotYesResponse = pending[id][mailbox].gotYes;
-	        		++ (pending[id][mailbox].serverRespondCount);
-	        		if (pending[id][mailbox].serverRespondCount == (serverCount-1)){
+        bool isLookingForLock = false;
+        if(sysCode2 == 'L') {
+            isLookingForLock = true;
+        }
 
-	        			cout << "+++++++ reached serverRespondCount in No\n";
-	        			//deleting request from table
-	        			if(gotYesResponse){
-	        				deletePendingRequest(id, mailbox);
-	        				continue;
-	        			} else if ( sysCode2 != 'C'){
-			            	// not a create syscall and all other servers return NO
-			            	// request failed
-			                char* reqFailed = "Request Failed!";
+        bool isSignal = false;
+        if (sysCode1 == 'C' && sysCode2 == 'S') {
+            isSignal = true;
+        }
 
-			                pktHdr.from = id;
-			                mailHdr.from = mailbox;
-			                mailHdr.to = 0;
-			                sendMessageToClient(reqFailed, pktHdr, mailHdr);
-			                deletePendingRequest(id, mailbox);
-			                continue;
-		        		}
-		        		
-	        		}else{
-	        			continue;
-	        		}
-	        	break;
-	        }
-	    }
+        bool currentServerHasEntity = false; // for 'regular'
+        bool currentServerHasCond = false; // for wait only
+        bool currentServerHasLock = false; // for wait only
+
+        if(isWait) { // if it is Wait, we must check if we have the CV
+            currentServerHasCond = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, entityIndex2);
+        } else {
+            currentServerHasEntity = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, entityIndex1);
+        }
+
+        if(serverCount > 1) {
+            switch(response) {
+                case '0':
+                    cout << "---- Server got message from Client with '0' ----" << endl;
+                    // request is sent from client
+                    // put into pending table
+                    if(isWait) {
+                        waitRequest[id][mailbox].isEmpty = false;
+                        waitRequest[id][mailbox].msg = new char [strlen(tempString) + 1];
+                        strncpy(waitRequest[id][mailbox].msg, tempString, strlen(tempString));
+                        waitRequest[id][mailbox].msg[strlen(tempString)] = '\0';
+
+                        cout << "  isWait syscall" << endl;
+                        if(currentServerHasCond) { // we have the CV
+                            cout << "    initial server has Cond" << endl;
+                            waitRequest[id][mailbox].hasCond = true;
+                            waitRequest[id][mailbox].condRespondCount = serverCount-1;
+                            waitRequest[id][mailbox].condServerOwner = machineId;
+
+                            currentServerHasLock = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, entityIndex1);
+                            lookForLockLogic(currentServerHasLock, machineId, mailbox, sysCode1, entityIndex1, entityIndex2, entityIndex3, name, pktHdr, mailHdr);
+                        } else { //We don't have the CV
+                            cout << "    initial server doesn't have Cond" << endl;
+                            //probably have to flag stuff in request table
+                            cout << "    = checkOtherServers..." << endl;
+                            checkOtherServers(tempString, pktHdr, mailHdr);
+                            continue;
+                        }
+                    } else if(isSignal) {
+                        if(currentServerHasCond) {
+
+                        } else {
+
+                        }
+                    } else { // other than wait call
+                        if(!currentServerHasEntity) {
+                            pending[id][mailbox].isEmpty = false;
+                            pending[id][mailbox].serverRespondCount = 0;
+                            pending[id][mailbox].message = new char[strlen(tempString)+1];
+                            strncpy(pending[id][mailbox].message, tempString, strlen(tempString));
+                            pending[id][mailbox].message[strlen(tempString)] = '\0';
+                            cout << "======= Sending to other servers" << endl;
+                            checkOtherServers(tempString, pktHdr, mailHdr);
+                            continue;
+                        }
+                    }
+                    break;
+                case 'C':
+                    cout << "---- Server got message from other Server with 'C' ----" << endl;
+                    if(isWait) { // checking if we have CV that OG server didn't have
+                        cout << "  looking for Cond from Wait" << endl;
+                        if (currentServerHasCond){
+                            cout << "    current server has Cond, reply with 'Y'" << endl;
+                            // we have the cond, so reply Y
+                            tempString[0] = 'Y';
+                        }else{
+                            cout << "    current server doesn't have Cond, reply with 'N'" << endl;
+                            // we dont have the cond, so reply N
+                            tempString[0] = 'N';
+                        }
+                        sendMessageToClient(tempString, pktHdr, mailHdr);
+                        // TODO: send message to server?
+                    } else if(isLookingForLock) {
+                        cout << "  looking for Lock from Wait" << endl;
+                        // other servers telling us to check for a lock from wait
+                        currentServerHasLock = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, entityIndex1);
+                        if(currentServerHasLock){
+                            cout << "    current server has Lock, reply with 'Y'" << endl;
+                            // we have the lock, so reply Y
+                            tempString[0] = 'Y';
+                            ServerThread thread;
+                            thread.machineId = id;
+                            thread.mailboxNum = mailbox;
+                            if (!(serverLocks[decodeEntityIndex(entityIndex1)].lockOwner == thread)){
+                                cout << "    lock is not acquired by request client\n";
+                                tempString[0] = 'F';
+                            }
+                        } else {
+                            cout << "    current server doesn't have Lock, reply with 'N'" << endl;
+                            // we dont have the lock, so reply N
+                            tempString[0] = 'N';
+                        }
+                        // send message back to parent server
+                        
+                        sendMessageToClient(tempString, pktHdr, mailHdr);
+                    } else {
+                        cout << "======== check response C" << endl;
+                        // response is "Check" :: return Y or N
+                        mailHdr.to = 0;
+                        mailHdr.from = 0;
+                        cout << "======= in check::tempString: " << tempString << endl;
+                        sendMessageToClient(tempString, pktHdr, mailHdr);
+
+                        if (!currentServerHasEntity) {
+                            continue;
+                        }
+                    }
+                    break;
+                case 'Y':
+                    cout << "---- Server got message from other Server with 'Y' ----" << endl;
+                    if (isWait){
+                        cout << "  handle 'Y' response for Cond" << endl;
+                        waitRequest[id][mailbox].hasCond = true;
+                        ++(waitRequest[id][mailbox].condRespondCount);
+                        waitRequest[id][mailbox].condServerOwner = pktHdr.from;
+                        currentServerHasLock = checkCurrentServerContainEntity(isCreate, name, tempString, sysCode1, entityIndex1);
+                        lookForLockLogic(currentServerHasLock, machineId, mailbox, sysCode1, entityIndex1, entityIndex2, entityIndex3, name, pktHdr, mailHdr);
+                        if (!currentServerHasLock){
+                            continue;
+                        }
+                        // go to switch statement
+                    } else if (isLookingForLock){
+                        cout << "  handle 'Y' response for Wait::Lock" << endl;
+                        waitRequest[id][mailbox].hasLock = true;
+                        ++(waitRequest[id][mailbox].lockRespondCount);
+                        waitRequest[id][mailbox].lockServerOwner = pktHdr.from;
+                        
+                        // current server can do work now since the lock is found
+                    }else{
+                        cout << "======== check response Y" << endl;
+                        pending[id][mailbox].gotYes = true;
+                        ++ (pending[id][mailbox].serverRespondCount);
+                        if (pending[id][mailbox].serverRespondCount == (serverCount-1)){
+                            cout << "+++++++ reached serverRespondCount in Yes, deleting from table\n";
+                            deletePendingRequest(id, mailbox);
+                        }
+                        // request is sent from another server and the server has what we need
+                        continue;
+                    }
+                    break;
+                case 'N':
+                    cout << "---- Server got message from other Server with 'N' ----" << endl;
+                    if (pending[id][mailbox].isEmpty) {
+                        cout << "***********Pending Request Table is empty!\n";
+                        interrupt->Halt();
+                    }
+
+                    if(isWait) {
+                        cout << "  handle 'N' response for Cond (++serverCondRespondCount)" << endl;
+                        ++ (waitRequest[id][mailbox].condRespondCount);
+                        if (waitRequest[id][mailbox].condRespondCount == (serverCount-1)){
+                            cout << "    got all responses for Cond::serverCondRespondCount" << endl;
+                            bool gotYesResponse = waitRequest[id][mailbox].hasCond;
+                            if(gotYesResponse){
+                                cout << "      we got at least one 'Y' for Cond, so we continue" << endl;
+                                continue;
+                            } else {
+                                cout << "      Request failed because there is NO Cond" << endl;
+                                // request for cond failed, so wait failed
+                                waitRequestFail(id, mailbox, pktHdr, mailHdr);
+                                continue;
+                            }
+                        }else{
+                            continue;
+                        }
+                    } else if(isLookingForLock) {
+                        cout << "  handle 'N' response for Lock  (++serverLockRespondCount)" << endl;
+                        ++ (waitRequest[id][mailbox].lockRespondCount);
+                        if (waitRequest[id][mailbox].lockRespondCount == (serverCount-1)){
+                            cout << "    got all responses for Lock::serverLockRespondCount" << endl;
+                            //deleting request from table
+                            bool gotYesResponse = waitRequest[id][mailbox].hasLock;
+                            if(gotYesResponse){
+                                cout << "      we got at least one 'Y' for Lock, so continue" << endl;
+                                
+                            } else {
+                                cout << "      Request failed because there is NO Lock" << endl;
+                                // request for lock failed, so wait fails
+                                waitRequestFail(id, mailbox, pktHdr, mailHdr);
+                                continue;
+                            }
+                        }else{
+                            continue;
+                        }
+                    } else {
+                        ++ (pending[id][mailbox].serverRespondCount);
+                        if (pending[id][mailbox].serverRespondCount == (serverCount-1)){
+                            cout << "+++++++ reached serverRespondCount in No\n";
+                            //deleting request from table
+                            bool gotYesResponse = pending[id][mailbox].gotYes;
+                            if(gotYesResponse){
+                                deletePendingRequest(id, mailbox);
+                                continue;
+                            } else if ( sysCode2 != 'C'){
+                                // not a create syscall and all other servers return NO
+                                // request failed
+                                char* reqFailed = "Request Failed!";
+                                pktHdr.to = machineId;
+                                pktHdr.from = id;
+                                mailHdr.from = mailbox;
+                                mailHdr.to = 0;
+                                sendMessageToClient(reqFailed, pktHdr, mailHdr);
+                                deletePendingRequest(id, mailbox);
+                                continue;
+                            }
+                        }else{
+                            continue;
+                        }
+                    }
+                break;
+                case 'F':
+                    cout << "---- Server got message from other Server with 'F' ----" << endl;
+                    waitRequestFail(id, mailbox, pktHdr, mailHdr);
+                break;
+                case 'W':
+                    // int lockIndex = decodeEntityIndex(entityIndex1);
+                    // int condIndex = decodeEntityIndex(entityIndex2);
+                    Just_Wait(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox);
+                    continue;
+                break;
+                case 'S':
+                    Just_Signal(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox, ogClientId, ogClientMailbox);
+                    continue;
+                break;
+                case 'A':
+                    Just_Acquire(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox);
+                    continue;
+                break;
+                case 'R':
+                    Just_Release(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox);
+                    continue;
+                break;
+
+            }
+        }
 
         // sanity check::at this point the machineId of server and request should match
         if(decodedMailboxNum != 0 && !serverAndMachineIdMatch(decodedMailboxNum)) {
@@ -1204,6 +1667,8 @@ void Server() {
 
         // big switch statement to determine syscalls
         redirectToOriginalClient(pktHdr, mailHdr, id, mailbox, strlen(tempString));
+        int originalEntityIndex1 = entityIndex1;
+        int originalEntityIndex2 = entityIndex2;
         entityIndex1 = decodeEntityIndex(entityIndex1);
         entityIndex2 = decodeEntityIndex(entityIndex2);
         entityIndex3 = decodeEntityIndex(entityIndex3);
@@ -1282,14 +1747,21 @@ void Server() {
                         sendCreateEntityMessage(ss, pktHdr, mailHdr);
                     break;
                     case 'W': // condition wait
-                        Wait_server(entityIndex1, entityIndex2, pktHdr, mailHdr); //lock then CV
+                        if (serverCount > 1){
+                            WaitMoreThanOne_server(originalEntityIndex1, originalEntityIndex2, pktHdr, mailHdr, id, mailbox);
+                        } else {
+                            Wait_server(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox); //lock then CV    
+                        }
                         ss.str("");
                         ss.clear();
                         ss << "Wait_server";
                     break;
                     case 'S': // condition signal
-                        Signal_server(entityIndex1, entityIndex2, pktHdr, mailHdr); //lock then CV
-
+                        if (serverCount > 1){
+                            SignalMoreThanOne_server(originalEntityIndex1, originalEntityIndex2, pktHdr, mailHdr, id, mailbox, ogClientId, ogClientMailbox);
+                        } else {
+                            Signal_server(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox); //lock then CV    
+                        }
                         ss.str("");
                         ss.clear();
                         ss << "Signal_server";
