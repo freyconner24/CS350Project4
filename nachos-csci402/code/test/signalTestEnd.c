@@ -14,6 +14,10 @@ int cond2 = 1;
 int condToBeDestroyed = 2;
 
 int main() {
+  lock1 = CreateLock("Lock1", 5, 0);
+  lock2 = CreateLock("Lock2", 5, 0);
+  cond1 = CreateCondition("Condition1", 10, 0);
+  cond2 = CreateCondition("Condition2", 10, 0);
   Write("Signall cond1 with lock1 again, should be successful\n", 53, ConsoleOutput);
   Acquire(lock1);
   Signal(lock1,cond1);

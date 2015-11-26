@@ -14,6 +14,9 @@ int cond2 = 1;
 int condToBeDestroyed = 2;
 
 int main() {
+	
+	lock1 = CreateLock("Lock1", 5, 0);
+	cond1 = CreateCondition("Condition1", 10, 0);
   Write("Waiting cond1 with lock1, should be successful\n", 47, ConsoleOutput);
   Acquire(lock1);
   Wait(lock1,cond1);

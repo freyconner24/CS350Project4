@@ -400,6 +400,7 @@ void redirectToOriginalClient(PacketHeader &pktHdr, MailHeader &mailHdr, int id,
 }
 
 void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char* data, int entityIndex, Entity e){
+    entityIndex = decodeEntityIndex(entityIndex);
     List* waitQueue = NULL;
     string entityString = "";
     int isCond = 0; // this is technically a boolean but we want stringstream to int it instead
@@ -407,11 +408,15 @@ void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char*
         case LOCK:
               entityString = "Lock";
               waitQueue = serverLocks[entityIndex].waitQueue;
+            cout << "  append to lock waitqueue\n";
+
             break;
         case CONDITION:
             entityString = "Condition";
             waitQueue = serverConds[entityIndex].waitQueue; //Put current thread on the lock’s waitQueue
+            cout << "    entityIndex " << entityIndex << endl; 
             isCond = 1;
+            cout << "   append to cond waitqueue\n";
             break;
     }
     redirectPktMailHeader(pktHdr, mailHdr, strlen(data));
@@ -421,7 +426,7 @@ void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char*
   string *msg = new string();
   *msg = ss.str();
 
-  cout << "Append to " << entityString << " waitQueue" << *msg << endl;
+  cout << "Append to " << entityString << " waitQueue " << *msg << endl;
   waitQueue->Append(msg); //Put current thread on the lock’s waitQueue
 }
 
@@ -964,6 +969,7 @@ void Just_Wait(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHead
     ServerThread thread;
     thread.machineId = id;
     thread.mailboxNum = mailbox;
+    cout << "          lockIndex: " << lockIndex << endl;
     if (waitRequest[id][mailbox].condServerOwner == machineId){
         if (!serverConds[decodedCondIndex].hasWaitingLock){
             serverConds[decodedCondIndex].waitingLockIndex = lockIndex;
@@ -974,6 +980,8 @@ void Just_Wait(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHead
         mailHdr.to = 0;
         mailHdr.from = mailbox;
         appendMessageToEntityQueue(pktHdr, mailHdr, "Finished Waiting!", conditionIndex, CONDITION);
+        cout << "          after append to cond waitqueue\n";
+        cout << "          waitRequest[id][mailbox].lockServerOwner: " << waitRequest[id][mailbox].lockServerOwner << endl;
         releaseLockMoreThanOne_server(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
     } else {
         cout << "ERROR IN JUST WAIT, OWNER != MACHINEID\n";
@@ -1025,24 +1033,30 @@ void Just_Signal(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHe
 }
 
 void actionOnRemoteServer(stringstream &ss, bool isLock, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    cout << "          sending out the remote command\n";
     int bufferSize = ss.str().size();
     char* tempLockString = new char [bufferSize + 1];
     strncpy(tempLockString, ss.str().c_str(), bufferSize);
     tempLockString[bufferSize] = '\0';
     if (isLock){
         pktHdr.to = waitRequest[id][mailbox].lockServerOwner;
+        cout << "          waitRequest[id][mailbox].lockServerOwner: " << waitRequest[id][mailbox].lockServerOwner << endl;
     } else {
         pktHdr.to = waitRequest[id][mailbox].condServerOwner;
     }
+    
     pktHdr.from = machineId;
     mailHdr.to = 0;
     mailHdr.from = 0;
+    cout << "pktHdr.to: " << pktHdr.to << " pktHdr.from: " << pktHdr.from << " mailHdr.to: " << mailHdr.to << " mailHdr.from: " << mailHdr.from << endl;
     postOffice->Send(pktHdr, mailHdr, tempLockString);
 }
 
 void releaseOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     stringstream ss;
-    ss << 'R' << ' ' << machineId << ' ' << mailbox << ' ' << 'C' << ' ' << 'W' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname";
+    cout << "        releasing on remoteserver\n";
+    cout << "        id: " << id << " mailbox: " << mailbox << endl;
+    ss << 'R' << ' ' << id << ' ' << mailbox << ' ' << 'C' << ' ' << 'W' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname";
     actionOnRemoteServer(ss, TRUE, pktHdr, mailHdr, id, mailbox);
 }
 
@@ -1075,9 +1089,13 @@ void SignalMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &p
 }
 
 void WaitMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
+    cout << "    entered WaitMoreThanOne_server\n";
+    cout << "    waitRequest[id][mailbox].lockServerOwner: " << waitRequest[id][mailbox].lockServerOwner << endl;
     if (waitRequest[id][mailbox].condServerOwner == machineId){
+        cout << "    original server has the condition\n";
         Just_Wait(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
     } else {
+        cout << "    original server does not have the condition\n";
         waitOnRemoteServer(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
     }
 }
@@ -1091,9 +1109,16 @@ void AcquireMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &
 }
 
 void releaseLockMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    cout << "    got into releaseLockMoreThanOne_server\n";
+    cout << "    waitRequest[id][mailbox].lockServerOwner: " << waitRequest[id][mailbox].lockServerOwner << endl;
+    cout << "    machineId: " << machineId << endl;
     if (waitRequest[id][mailbox].lockServerOwner == machineId){
+        cout << "      current server is lockowner, so just release\n";
+
         Just_Release(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
     } else {
+        cout << "      current server is not lockowner, so release on remote server\n";
+
         releaseOnRemoteServer(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
     }
 }
@@ -1265,6 +1290,7 @@ void lookForLockLogic(bool currentServerHasLock, int id, int mailbox, char sysCo
         waitRequest[id][mailbox].hasLock = true;
         waitRequest[id][mailbox].lockRespondCount = serverCount-1;
         waitRequest[id][mailbox].lockServerOwner = machineId;
+        cout << "      waitRequest[id][mailbox].lockServerOwner: " << waitRequest[id][mailbox].lockServerOwner << endl;
         // do work
     } else {
         cout << "      initial server doesn't have Lock" << endl;
@@ -1280,7 +1306,7 @@ void deleteWaitingRequest(int id, int mailbox){
     waitRequest[id][mailbox].hasCond = false;
     waitRequest[id][mailbox].lockServerOwner = -1;
     waitRequest[id][mailbox].condServerOwner = -1;
-    waitRequest[id][mailbox].msg[0] = '\0';
+    // waitRequest[id][mailbox].msg[0] = '\0';
     waitRequest[id][mailbox].lockRespondCount = -1;
     waitRequest[id][mailbox].condRespondCount = -1;
     waitRequest[id][mailbox].lockClientOwner.machineId = -1;
@@ -1288,13 +1314,16 @@ void deleteWaitingRequest(int id, int mailbox){
 }
 
 void waitRequestFail(int id, int mailbox, PacketHeader &pktHdr, MailHeader &mailHdr){
+    cout << "  got into waitRequestFail" << endl;
     char* reqFailed = "  waitRequestFail!";
     waitRequest[id][mailbox].failed = true;
     pktHdr.to = machineId;
     pktHdr.from = id;
     mailHdr.from = mailbox;
     mailHdr.to = 0;
+    cout << "  before deleteWaitingRequest" << endl;
     deleteWaitingRequest(id,mailbox);
+    cout << "  before sendMessageToClient" << endl;
     sendMessageToClient(reqFailed, pktHdr, mailHdr);
 }
 
@@ -1440,6 +1469,7 @@ void Server() {
                     // put into pending table
                     if(isWait) {
                         waitRequest[id][mailbox].isEmpty = false;
+                        waitRequest[id][mailbox].condRespondCount = 0;
                         waitRequest[id][mailbox].msg = new char [strlen(tempString) + 1];
                         strncpy(waitRequest[id][mailbox].msg, tempString, strlen(tempString));
                         waitRequest[id][mailbox].msg[strlen(tempString)] = '\0';
@@ -1558,12 +1588,16 @@ void Server() {
                     break;
                 case 'N':
                     cout << "---- Server got message from other Server with 'N' ----" << endl;
-                    if (pending[id][mailbox].isEmpty) {
-                        cout << "***********Pending Request Table is empty!\n";
+                    if (!isWait && pending[id][mailbox].isEmpty) {
+                        cout << "  ***********Pending Request Table is empty!\n";
                         interrupt->Halt();
                     }
 
                     if(isWait) {
+                        if (waitRequest[id][mailbox].isEmpty) {
+                            cout << "  ***********Waiting Request Table is empty!\n";
+                            interrupt->Halt();
+                        }
                         cout << "  handle 'N' response for Cond (++serverCondRespondCount)" << endl;
                         ++(waitRequest[id][mailbox].condRespondCount);
                         if (waitRequest[id][mailbox].condRespondCount == (serverCount-1)){
@@ -1633,18 +1667,27 @@ void Server() {
                 case 'W':
                     // int lockIndex = decodeEntityIndex(entityIndex1);
                     // int condIndex = decodeEntityIndex(entityIndex2);
+                    cout << "---- Server got message from other Server with 'W' ----" << endl;
+
                     Just_Wait(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox);
                     continue;
                 break;
                 case 'S':
+                    cout << "---- Server got message from other Server with 'S' ----" << endl;
+
+
                     Just_Signal(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox, ogClientId, ogClientMailbox);
                     continue;
                 break;
                 case 'A':
+                    cout << "---- Server got message from other Server with 'A' ----" << endl;
+
                     Just_Acquire(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox);
                     continue;
                 break;
                 case 'R':
+                    cout << "---- Server got message from other Server with 'R' ----" << endl;
+
                     Just_Release(entityIndex1, entityIndex2, pktHdr, mailHdr, id, mailbox);
                     continue;
                 break;

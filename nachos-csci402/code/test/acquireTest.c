@@ -16,6 +16,7 @@ int deadLock2;
 int lockToBeDestroyed;
 
 int main() {
+  lock1 = CreateLock("Lock1", 5, 0);
   Acquire(lock1);
   for(i = 0; i < 40000; ++i){
     Yield();
