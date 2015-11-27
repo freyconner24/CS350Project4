@@ -22,7 +22,7 @@ int main() {
   Acquire(lock1);
   Signal(lock1,cond1);
   Release(lock1);
-
+/*
   for (i = 0; i < 20000; ++i){
     Yield();
   }
