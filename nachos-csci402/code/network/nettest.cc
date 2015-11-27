@@ -633,9 +633,9 @@ void checkOtherServers(char *tempString, PacketHeader &pktHdr, MailHeader &mailH
 int CreateLock_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeader &mailHdr) {
   cout << "    CreateLock_server entered" << endl;
     if (serverLockCount < 0 ||serverLockCount >= MAX_LOCK_COUNT){
-      cout << "      INVALID LOCK" << endl;
-      sendMessageToClient("Too many locks!", pktHdr, mailHdr);
-      return -1;
+        cout << "      INVALID LOCK" << endl;
+        sendMessageToClient("Too many locks!", pktHdr, mailHdr);
+        return -1;
     }
     // if we have the lock with the name they want to create
     // we return the index
@@ -643,22 +643,24 @@ int CreateLock_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeade
     bool deleteFlag;
     bool isDeleted;
     for (int i = 0; i < serverLockCount; ++i){
-      deleteFlag = serverLocks[i].deleteFlag;
-      isDeleted = serverLocks[i].isDeleted;
-      if (strcmp(name, serverLocks[i].name) == 0 && !isDeleted){
+        deleteFlag = serverLocks[i].deleteFlag;
+        isDeleted = serverLocks[i].isDeleted;
+        if (strcmp(name, serverLocks[i].name) == 0 && !isDeleted){
         // cout << serverLocks[i].name << " returning 0?\n";
         // cout << "name == serverLocks[].name " << strcmp(name, serverLocks[i].name) << endl;
         return encodeEntityIndex(i);
-      }
+        }
     }
 
     // initialize all the values
     serverLocks[serverLockCount].deleteFlag = FALSE;
     serverLocks[serverLockCount].isDeleted = FALSE;
     serverLocks[serverLockCount].lockStatus = FREE;
+
     serverLocks[serverLockCount].name = new char [strlen(name) + 1];
     strncpy(serverLocks[serverLockCount].name, name, strlen(name));
     serverLocks[serverLockCount].name[strlen(name)] = '\0';
+
     serverLocks[serverLockCount].lockOwner.machineId = -1;
     serverLocks[serverLockCount].lockOwner.mailboxNum = -1;
 
@@ -809,23 +811,44 @@ void DestroyLock_server(int lockIndex, PacketHeader &pktHdr, MailHeader &mailHdr
 
 // create monitor server call
 int CreateMonitor_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeader &mailHdr) {
+    cout << "    CreateMonitor_server entered" << endl;
     if (appendNum <= 0 || appendNum > 50){//sanity checks
+        cout << "      INVALID MON" << endl;
         sendMessageToClient("Array invalid! Enter 1-50", pktHdr, mailHdr);
         return -1;
     }
-    if (serverMonCount < 0 ||serverMonCount >= MAX_MON_COUNT){
+    if (serverMonCount < 0 || serverMonCount >= MAX_MON_COUNT){
         sendMessageToClient("Too many mons!", pktHdr, mailHdr);
         return -1;
     }
+
+    bool deleteFlag;
+    bool isDeleted;
+    for (int i = 0; i < serverMonCount; ++i){
+        deleteFlag = serverMons[i].deleteFlag;
+        isDeleted = serverMons[i].isDeleted;
+        if (strcmp(name, serverMons[i].name) == 0 && !isDeleted){
+            // cout << serverMons[i].name << " returning 0?\n";
+            // cout << "name == serverMons[].name " << strcmp(name, serverMons[i].name) << endl;
+            return encodeEntityIndex(i);
+        }
+    }
+
     serverMons[serverMonCount].deleteFlag = FALSE;
     serverMons[serverMonCount].isDeleted = FALSE;
-    serverMons[serverMonCount].name = name;
+
+    serverMons[serverMonCount].name = new char [strlen(name) + 1];
+    strncpy(serverMons[serverMonCount].name, name, strlen(name));
+    serverMons[serverMonCount].name[strlen(name)] = '\0';
+    
     serverMons[serverMonCount].values = new int [appendNum];
 
     int currentMonIndex = serverMonCount;
     ++serverMonCount;
-    //sendMessageToClient("Monitor created!", pktHdr, mailHdr);
 
+    //sendMessageToClient("Monitor created!", pktHdr, mailHdr);
+    cout << "    currentMonIndex " << currentMonIndex << endl;
+    cout << "    encoded index " << encodeEntityIndex(currentMonIndex) << endl;
     return encodeEntityIndex(currentMonIndex);
 }
 
@@ -902,10 +925,11 @@ int CreateCondition_server(char* name, int appendNum, PacketHeader &pktHdr, Mail
     // initialize
     serverConds[serverCondCount].deleteFlag = FALSE;
     serverConds[serverCondCount].isDeleted = FALSE;
-    serverConds[serverCondCount].name = name;
+
     serverConds[serverCondCount].name = new char [strlen(name) + 1];
     strncpy(serverConds[serverCondCount].name, name, strlen(name));
     serverConds[serverCondCount].name[strlen(name)] = '\0';
+    
     serverConds[serverCondCount].waitingLockIndex = -1;
     serverConds[serverCondCount].hasWaitingLock == FALSE;
     
