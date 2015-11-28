@@ -542,6 +542,13 @@ void deletePendingRequest(int id, int mailbox){
   pending[id][mailbox].message[0] = '\0';
 }
 
+void setClientandServer(PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
+    pktHdr.to = machineId;
+    pktHdr.from = id;
+    mailHdr.to = 0;
+    mailHdr.from = mailbox;
+}
+
 // +++++++++++++++++ UTILITY SERVER METHODS ++++++++++++++++
 
 // abstract method to send message to the client from the server
@@ -786,7 +793,7 @@ void DestroyLock_server(int lockIndex, PacketHeader &pktHdr, MailHeader &mailHdr
 // ++++++++++++++++++++++++++++ MVs ++++++++++++++++++++++++++++
 
 // create monitor server call
-int CreateMonitor_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeader &mailHdr) {
+int CreateMonitor_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
     cout << "    CreateMonitor_server entered" << endl;
     if (appendNum <= 0 || appendNum > 50){//sanity checks
         cout << "      INVALID MON" << endl;
@@ -829,7 +836,8 @@ int CreateMonitor_server(char* name, int appendNum, PacketHeader &pktHdr, MailHe
 }
 
 // get monitor server call
-int GetMonitor_server(int monitorIndex, int arrayIndex,PacketHeader &pktHdr, MailHeader &mailHdr) {
+int GetMonitor_server(int monitorIndex, int arrayIndex,PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
+    setClientandServer(pktHdr, mailHdr, id, mailbox);
     if(!validateEntityIndex(monitorIndex, MONITOR)) {
         sendMessageToClient("Invalid monitor index!", pktHdr, mailHdr);
         return -1;
@@ -848,8 +856,9 @@ int GetMonitor_server(int monitorIndex, int arrayIndex,PacketHeader &pktHdr, Mai
 }
 
 // set monitor server call
-void SetMonitor_server(int monitorIndex, int arrayIndex, int value,PacketHeader &pktHdr, MailHeader &mailHdr) {
+void SetMonitor_server(int monitorIndex, int arrayIndex, int value,PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
     // set the value and return the message
+    setClientandServer(pktHdr, mailHdr, id, mailbox);
     if(!validateEntityIndex(monitorIndex, MONITOR)) {
         sendMessageToClient("Invalid monitor index!", pktHdr, mailHdr);
         return;
@@ -859,12 +868,14 @@ void SetMonitor_server(int monitorIndex, int arrayIndex, int value,PacketHeader 
         return;
     }
     serverMons[monitorIndex].values[arrayIndex] = value;
+    
     sendMessageToClient("Set monitor successfully!", pktHdr, mailHdr);
 
 }
 
 // destroy monitor server call
-void DestroyMonitor_server(int monitorIndex, PacketHeader &pktHdr, MailHeader &mailHdr) {
+void DestroyMonitor_server(int monitorIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
+    setClientandServer(pktHdr, mailHdr, id, mailbox);
     if(!validateEntityIndex(monitorIndex, MONITOR)) {
         sendMessageToClient("Invalid monitor index!", pktHdr, mailHdr);
         return;
@@ -878,7 +889,7 @@ void DestroyMonitor_server(int monitorIndex, PacketHeader &pktHdr, MailHeader &m
 // ++++++++++++++++++++++++++++ CVs ++++++++++++++++++++++++++++
 
 // create condition server call
-int CreateCondition_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeader &mailHdr) {
+int CreateCondition_server(char* name, int appendNum, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
     printf("    CreateCondition_server entered\n");
     if (serverCondCount < 0 ||serverCondCount >= MAX_COND_COUNT){
         cout << "      INVALID COND" << endl;
@@ -1490,7 +1501,7 @@ void Server() {
         if (sysCode2 == 'C') {
             isCreate = true;
         }
-
+ 
         bool isWait = false;
         if (sysCode1 == 'C' && sysCode2 == 'W') {
             isWait = true;
@@ -1795,6 +1806,10 @@ void Server() {
                         ss << entityId;
                         //cout << "CreateLock_server::entityId: " << entityId << endl;
                         //Process the message
+                        pktHdr.to = machineId;
+                        pktHdr.from = id;
+                        mailHdr.to = 0;
+                        mailHdr.from = mailbox;
                         sendCreateEntityMessage(ss, pktHdr, mailHdr);
                     break;
                     case 'A': // acquire lock
@@ -1824,24 +1839,28 @@ void Server() {
                     case 'C': // create monitor
                         ss.str("");
                         ss.clear();
-                        entityId = CreateMonitor_server(name, entityIndex1, pktHdr, mailHdr);
+                        entityId = CreateMonitor_server(name, entityIndex1, pktHdr, mailHdr, id, mailbox);
                         ss << entityId;
+                        pktHdr.to = machineId;
+                        pktHdr.from = id;
+                        mailHdr.to = 0;
+                        mailHdr.from = mailbox;
                         //cout << "CreateMonitor_server::entityId: " << entityId << endl;
                         sendCreateEntityMessage(ss, pktHdr, mailHdr);
                     break;
                     case 'G': // get monitor
                         ss.str("");
                         ss.clear();
-                        entityId = GetMonitor_server(entityIndex1, entityIndex2,pktHdr, mailHdr);
+                        entityId = GetMonitor_server(entityIndex1, entityIndex2,pktHdr, mailHdr, id, mailbox);
                     break;
                     case 'S': // set monitor
-                        SetMonitor_server(entityIndex1, entityIndex2,entityIndex3,pktHdr, mailHdr);
+                        SetMonitor_server(entityIndex1, entityIndex2,entityIndex3,pktHdr, mailHdr, id, mailbox);
                         ss.str("");
                         ss.clear();
                         ss << "SetMonitor_server";
                     break;
                     case 'D': // destroy monitor
-                        DestroyMonitor_server(entityIndex1, pktHdr, mailHdr);
+                        DestroyMonitor_server(entityIndex1, pktHdr, mailHdr, id, mailbox);
                         ss.str("");
                         ss.clear();
                         ss << "DestroyMonitor_server";
@@ -1853,8 +1872,12 @@ void Server() {
                     case 'C': // create condition
                         ss.str("");
                         ss.clear();
-                        entityId = CreateCondition_server(name, serverCondCount, pktHdr, mailHdr);
+                        entityId = CreateCondition_server(name, serverCondCount, pktHdr, mailHdr, id, mailbox);
                         ss << entityId;
+                        pktHdr.to = machineId;
+                        pktHdr.from = id;
+                        mailHdr.to = 0;
+                        mailHdr.from = mailbox;
                         //cout << "CreateCondition_server::entityId: " << entityId << endl;
                         sendCreateEntityMessage(ss, pktHdr, mailHdr);
                     break;
