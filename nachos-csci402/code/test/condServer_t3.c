@@ -14,6 +14,8 @@ int cond2 = 1;
 int condToBeDestroyed = 2;
 
 int main() {
+	lock1 = CreateLock("Lock1", 5, 0);
+	cond1 = CreateCondition("Condition1", 10, 0);
   Write("Broadcasting cond1 with lock1, should be successful\n", 52, ConsoleOutput);
   Acquire(lock1);
   Broadcast(lock1,cond1);
