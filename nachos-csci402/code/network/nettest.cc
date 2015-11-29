@@ -102,6 +102,8 @@ struct ServerThread{
   int mailboxNum;
 };
 
+// this is the server request object.
+// essentially, this is used for server-to-server interactions
 struct ServerRequest{
   ServerRequest(char* msg){
     gotYes = false;
@@ -250,6 +252,8 @@ struct Msg{
     char* data;
 };
 
+// this is the request made specifically for the Wait Server call since it needs to work with
+// two entities (Lock and Condition).  This is made into a WaitRequest Table
 struct WaitRequest{
     WaitRequest(){
         isEmpty = true;
@@ -287,14 +291,17 @@ int serverMonCount = 0;
 int serverCondCount = 0;
 // ++++++++++++++++++++++++++++ Validation ++++++++++++++++++++++++++++
 
+// this decodes the encoded mailbox value
 int decodeMailbox(int value) {
     return value / 1000;
 }
 
+// this decodes the encoded entity index so as to be able to access the array
 int decodeEntityIndex(int value) {
     return value % 1000;
 }
 
+// this checks that the current server and machineId match
 bool serverAndMachineIdMatch(int mailboxNum) {
     return mailboxNum == machineId;
 }
@@ -338,8 +345,8 @@ bool validateEntityIndex(int entityIndex, Entity e) {
     return TRUE;
 }
 
+// this makes sure that the index given is a valid array index
 bool validateArrayIndex(int arrayIndex) {
-  // cout << "arrayindex " << arrayIndex << endl;
     if (arrayIndex < 0 || arrayIndex >= MAX_ARR_COUNT){ // check if index is in valid range
       DEBUG('l',"    Mon::Array index %d invalid\n", arrayIndex);
       return false;
@@ -383,6 +390,7 @@ void serverReleaseLock(int lockIndex, PacketHeader &pktHdr, MailHeader &mailHdr)
   }
 }
 
+// this redirects the current packet and mail headers to the client in which the request was sent
 void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messageLength) {
     pktHdr.to = pktHdr.from;
     int mailbox = mailHdr.to;
@@ -391,6 +399,7 @@ void redirectPktMailHeader(PacketHeader &pktHdr, MailHeader &mailHdr, int messag
     mailHdr.length = messageLength + 1;
 }
 
+// this redirects the message from the server to the original client that made the request
 void redirectToOriginalClient(PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, int messageLength){
   pktHdr.to = machineId;
     pktHdr.from = id;
@@ -399,6 +408,7 @@ void redirectToOriginalClient(PacketHeader &pktHdr, MailHeader &mailHdr, int id,
     mailHdr.length = messageLength+1;
 }
 
+// this appends an encoded stringstream message to the appropriate waitQueue
 void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char* data, int entityIndex, Entity e){
     entityIndex = decodeEntityIndex(entityIndex);
     List* waitQueue = NULL;
@@ -447,6 +457,7 @@ void appendMessageToEntityQueue(PacketHeader &pktHdr, MailHeader &mailHdr, char*
     }
 }*/
 
+// makes the the entity with the current name actually exists on the current server
 bool checkEntityByName(char* name, Entity e){
   // check entity by name because it is a create request
   // we do not know if the lock/CV/MV is already there or not
@@ -483,8 +494,9 @@ bool checkEntityByName(char* name, Entity e){
     return false;
 }
 
+// this checks if the current server has the entity in question
 bool hasEntity(char* msg, bool isCreate, char* name, Entity e, bool containsEntity, int mailbox){
-  // if it is a create request, we check if
+  // we check if it is a create request from the client
   if (isCreate){
     cout << "isCreate" << endl;
     if (checkEntityByName(name, e)){
@@ -507,6 +519,7 @@ bool hasEntity(char* msg, bool isCreate, char* name, Entity e, bool containsEnti
     }
 }
 
+// encodes the current entity index so that it can be passed through the servers
 int encodeEntityIndex(int entityIndex){
   return (machineId*1000 + entityIndex);
 }
@@ -535,6 +548,7 @@ bool checkCurrentServerContainEntity(bool isCreate, char* name, char* msg, int s
     return false;
 }
 
+// deletes the current pending request in question
 void deletePendingRequest(int id, int mailbox){
   pending[id][mailbox].isEmpty = true;
   pending[id][mailbox].gotYes = false;
@@ -542,6 +556,7 @@ void deletePendingRequest(int id, int mailbox){
   pending[id][mailbox].message[0] = '\0';
 }
 
+// this sets the packet and mail headers to send to the correct clients and servers
 void setClientandServer(PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     pktHdr.to = machineId;
     pktHdr.from = id;
@@ -585,7 +600,7 @@ void sendCreateEntityMessage(stringstream &ss, PacketHeader &pktHdr, MailHeader 
 }
 
 
-
+// sends a message to all other servers excluding the current server
 void checkOtherServers(char *tempString, PacketHeader &pktHdr, MailHeader &mailHdr){
   cout << "checking other servers...\n";
   // cout << "======tempString and length "<< tempString << " " << strlen(tempString) << endl;
@@ -685,6 +700,7 @@ void Acquire_server(int lockIndex, PacketHeader &pktHdr, MailHeader &mailHdr) {
     }
 }
 
+// this is exactly like the Acqire call, but built in mind that there are multiple servers
 void Acquire_RPC_server(int lockIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
     int decodedLockIndex = decodeEntityIndex(lockIndex);
     int serverThatContainsLock = decodeMailbox(lockIndex); // yes, this is correct
@@ -967,6 +983,8 @@ void Wait_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHe
     serverReleaseLock(lockIndex, pktHdr, mailHdr); // not the syscall, the helper function
 }
 
+// this server call JUST releases the lock.  The lock has already been validated at this stage and all that needs
+// to happen is that the lock is released by the noted server.
 void Just_Release(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     int decodedLockIndex = decodeEntityIndex(lockIndex);
     int decodedCondIndex = decodeEntityIndex(conditionIndex);
@@ -994,7 +1012,8 @@ void Just_Release(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailH
     }
 }
 
-
+// tells the server in question to Wait without doing any checks because all of the entities in question
+// have been validated already
 void Just_Wait(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, bool isOriginalServer){
     int ogPktFrom = pktHdr.from;
     int decodedCondIndex = decodeEntityIndex(conditionIndex);
@@ -1035,6 +1054,8 @@ void Just_Wait(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHead
     }
 }
 
+// tells the server in question to Acquire without doing any checks because all of the entities in question
+// have been validated already
 void Just_Acquire(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     //lockIndex has to be decoded so that we access the correct index instead of the index with server Id
     int decodedLockIndex = decodeEntityIndex(lockIndex);
@@ -1056,6 +1077,8 @@ void Just_Acquire(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailH
     }
 }
 
+// tells the server in question to Signal without doing any checks because all of the entities in question
+// have been validated already
 void Just_Signal(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, int ogClientId, int ogClientMailbox){
     int decodedCondIndex = decodeEntityIndex(conditionIndex);
     string* msg;
@@ -1078,6 +1101,7 @@ void Just_Signal(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHe
     }
 }
 
+// abstract function for sending a message to the server that must execute a certain instruction
 void actionOnRemoteServer(stringstream &ss, bool isLock, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     cout << "          sending out the remote command\n";
     int bufferSize = ss.str().size();
@@ -1098,6 +1122,7 @@ void actionOnRemoteServer(stringstream &ss, bool isLock, PacketHeader &pktHdr, M
     postOffice->Send(pktHdr, mailHdr, tempLockString);
 }
 
+// the current server tells the remote server to Release()
 void releaseOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     stringstream ss;
     cout << "        releasing on remoteserver\n";
@@ -1106,26 +1131,28 @@ void releaseOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktH
     actionOnRemoteServer(ss, TRUE, pktHdr, mailHdr, id, mailbox);
 }
 
+// the current server tells the remote server to Wait()
 void waitOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     stringstream ss;
     ss << 'W' << ' ' << id << ' ' << mailbox << ' ' << 'C' << ' ' << 'W' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname";
     actionOnRemoteServer(ss, FALSE, pktHdr, mailHdr, id, mailbox);
 }
 
-// wait condition server call
+// the current server tells the remote server to Acquire()
 void acquireOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     stringstream ss;
     ss << 'A' << ' ' << id << ' ' << mailbox << ' ' << 'C' << ' ' << 'S' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname";
     actionOnRemoteServer(ss, TRUE, pktHdr, mailHdr, id, mailbox);
 }
 
+// the current server tells the remote server to Signal()
 void signalOnRemoteServer(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, int ogClientId, int ogClientMailbox){
     stringstream ss;
     ss << 'S' << ' ' << id << ' ' << mailbox << ' ' << 'C' << ' ' << 'S' << ' ' << lockIndex << ' ' << conditionIndex << ' ' << -1 << ' ' << "noname" << ' ' << ogClientId << ' ' << ogClientMailbox;
     actionOnRemoteServer(ss, FALSE, pktHdr, mailHdr, id, mailbox);
 }
 
-// wait condition server call
+// The Signal() server call rebuilt with more than one server in mind
 void SignalMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox, int ogClientId, int ogClientMailbox) {
     if (waitRequest[id][mailbox].condServerOwner == machineId){
         Just_Signal(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox, ogClientId, ogClientMailbox);
@@ -1134,6 +1161,7 @@ void SignalMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &p
     }
 }
 
+// The Wait() server call rebuilt with more than one server in mind
 void WaitMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
     cout << "    entered WaitMoreThanOne_server\n";
     cout << "    waitRequest[id][mailbox].lockServerOwner: " << waitRequest[id][mailbox].lockServerOwner << endl;
@@ -1147,6 +1175,7 @@ void WaitMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pkt
     }
 }
 
+// The Acquire() server call rebuilt with more than one server in mind
 void AcquireMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox) {
     if (waitRequest[id][mailbox].lockServerOwner == machineId){
         Just_Acquire(lockIndex, conditionIndex, pktHdr, mailHdr, id, mailbox);
@@ -1155,6 +1184,7 @@ void AcquireMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &
     }
 }
 
+// The Release() server call rebuilt with more than one server in mind
 void releaseLockMoreThanOne_server(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr, int id, int mailbox){
     cout << "    got into releaseLockMoreThanOne_server\n";
     cout << "    waitRequest[id][mailbox].lockServerOwner: " << waitRequest[id][mailbox].lockServerOwner << endl;
@@ -1170,7 +1200,7 @@ void releaseLockMoreThanOne_server(int lockIndex, int conditionIndex, PacketHead
     }
 }
 
-// wait condition server call
+// wait on the lock without releasing the lock
 void Wait_without_release(int lockIndex, int conditionIndex, PacketHeader &pktHdr, MailHeader &mailHdr) {
     ServerThread thread;
     thread.machineId = pktHdr.from;
@@ -1336,6 +1366,7 @@ void DestroyCondition_server(int conditionIndex, PacketHeader &pktHdr, MailHeade
   }
 }
 
+// function that specifically looks for the lock on other servers
 void lookForLockOnOtherServers(int id, int mailBox, char sysCode1, int entityIndex1, int entityIndex2, int entityIndex3, char* name, PacketHeader &pktHdr, MailHeader &mailHdr) {
     //We don't have the lock on current server
     cout << "      looking for lock on other servers..." << endl;
@@ -1347,6 +1378,7 @@ void lookForLockOnOtherServers(int id, int mailBox, char sysCode1, int entityInd
     checkOtherServers(tempLockString, pktHdr, mailHdr);
 }
 
+// if the current server does not have the lock, look for it on another server
 bool lookForLockLogic(bool currentServerHasLock, int id, int mailbox, char sysCode1, int entityIndex1, int entityIndex2, int entityIndex3, char* name, PacketHeader &pktHdr, MailHeader &mailHdr){
     if(currentServerHasLock) {
         cout << "      initial server has Lock" << endl;
@@ -1365,6 +1397,7 @@ bool lookForLockLogic(bool currentServerHasLock, int id, int mailbox, char sysCo
     }
 }
 
+// function that deletes the waitingRequest from the waitTable
 void deleteWaitingRequest(int id, int mailbox){
     waitRequest[id][mailbox].isEmpty = true;
     waitRequest[id][mailbox].failed = false;
@@ -1379,6 +1412,7 @@ void deleteWaitingRequest(int id, int mailbox){
     waitRequest[id][mailbox].lockClientOwner.mailboxNum = -1;
 }
 
+// checks wether or not the waitingRequest fails and reports accordingly
 void waitRequestFail(int id, int mailbox, PacketHeader &pktHdr, MailHeader &mailHdr){
     cout << "  got into waitRequestFail" << endl;
     char* reqFailed = "  waitRequestFail!";
