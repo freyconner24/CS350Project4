@@ -26,6 +26,6 @@ int main() {
     Yield();
   }
 
-	Write("Finshing acquireTest\n", 21, ConsoleOutput);
+	Write("Finishing acquireTest\n", 21, ConsoleOutput);
 	Exit(0);
 }

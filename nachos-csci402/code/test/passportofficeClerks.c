@@ -1,5 +1,5 @@
-/* passportoffice.c
- *      Passport office as a user program
+/* passportofficeClerks.c
+ *      Passport office as a user program to run all the clerks
  */
 
 #include "syscall.h"
@@ -11,7 +11,8 @@ int main() {
     int clerkNumber = 0, clerkTypeLength;
     PrintString("Setting up locks, conditions and monitor variables: ", 52); PrintNum(i); PrintNl();
     setup();
-    initializeEverything();
+
+        initializeEverything();
     PrintString("+++++Clerk instantiation", 24); PrintNl();
     for(clerkType = 0; clerkType < 4; ++clerkType) {
         if(clerkType == 0) {
@@ -40,16 +41,6 @@ int main() {
             }
         }
     }
-    for(i = 0; i < customerCount; i++){
-      PrintString("+++++Customer created with number: ", 35); PrintNum(i); PrintNl();
-        Exec("../test/customer");
-    }
-
-    for(i = 0; i < senatorCount; i++){
-      PrintString("+++++Senator Created\n", 21); PrintNum(i + 50); PrintNl();
-        Exec("../test/senator");
-    }
-    Exec("../test/manager");
 
 
 

@@ -31,7 +31,7 @@ CPP = $(GCCDIR)cpp
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt matmult sort testfiles exectests forktests passportoffice locktest condtest twoMatmults testsend networkTestsuite lockInvalidTest lock_t1 lock_t2 condServerInitTest condServer_t2 condServer_t1 condServer_t3 condServer_t4 condInit monInit monServer_t1 monServer_t2 monServer_t3 unitTestCond2 unitTestCond1 lock_t4 lock_t3 acquireTest signalTest twoSorts forkTwoSorts forkTwoMatmults signalTestEnd
+all: halt matmult sort testfiles exectests forktests manager senator customer applicationClerk pictureClerk passportClerk cashier passportoffice passportofficeManager passportofficeClerks passportofficeCustomers passportofficeSenators locktest condtest twoMatmults testsend networkTestsuite lockInvalidTest lock_t1 lock_t2 condServerInitTest condServer_t2 condServer_t1 condServer_t3 condServer_t4 condInit monInit monServer_t1 monServer_t2 monServer_t3 unitTestCond2 unitTestCond1 lock_t4 lock_t3 acquireTest signalTest twoSorts forkTwoSorts forkTwoMatmults signalTestEnd
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.s > strt.s
@@ -100,11 +100,72 @@ forktests: forktests.o start.o
 				../bin/coff2noff forktests.coff forktests
 
 
+
+setup.o: setup.h
+				$(CC) $(CFLAGS) -c setup.c
+
+manager.o: manager.c
+					$(CC) $(CFLAGS) -c manager.c
+manager: manager.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o manager.o setup.o -o manager.coff
+				../bin/coff2noff manager.coff manager
+senator.o: senator.c
+				$(CC) $(CFLAGS) -c senator.c
+senator: senator.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o senator.o setup.o -o senator.coff
+				../bin/coff2noff senator.coff senator
+customer.o: customer.c
+			$(CC) $(CFLAGS) -c customer.c
+customer: customer.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o customer.o setup.o -o customer.coff
+				../bin/coff2noff customer.coff customer
+cashier.o: cashier.c
+				$(CC) $(CFLAGS) -c cashier.c
+cashier: cashier.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o cashier.o setup.o -o cashier.coff
+				../bin/coff2noff cashier.coff cashier
+applicationClerk.o: applicationClerk.c
+				$(CC) $(CFLAGS) -c applicationClerk.c
+applicationClerk: applicationClerk.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o applicationClerk.o setup.o -o applicationClerk.coff
+				../bin/coff2noff applicationClerk.coff applicationClerk
+pictureClerk.o: pictureClerk.c
+				$(CC) $(CFLAGS) -c pictureClerk.c
+pictureClerk: pictureClerk.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o pictureClerk.o setup.o -o pictureClerk.coff
+				../bin/coff2noff pictureClerk.coff pictureClerk
+passportClerk.o: passportClerk.c
+				$(CC) $(CFLAGS) -c passportClerk.c
+passportClerk: passportClerk.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o passportClerk.o setup.o -o passportClerk.coff
+				../bin/coff2noff passportClerk.coff passportClerk
+
 passportoffice.o: passportoffice.c
 				$(CC) $(CFLAGS) -c passportoffice.c
-passportoffice: passportoffice.o start.o
-				$(LD) $(LDFLAGS) start.o passportoffice.o -o passportoffice.coff
+passportoffice: passportoffice.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o passportoffice.o setup.o -o passportoffice.coff
 				../bin/coff2noff passportoffice.coff passportoffice
+
+passportofficeManager.o: passportofficeManager.c
+				$(CC) $(CFLAGS) -c passportofficeManager.c
+passportofficeManager: passportofficeManager.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o passportofficeManager.o setup.o -o passportofficeManager.coff
+				../bin/coff2noff passportofficeManager.coff passportofficeManager
+passportofficeClerks.o: passportofficeClerks.c
+				$(CC) $(CFLAGS) -c passportofficeClerks.c
+passportofficeClerks: passportofficeClerks.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o passportofficeClerks.o setup.o -o passportofficeClerks.coff
+				../bin/coff2noff passportofficeClerks.coff passportofficeClerks
+passportofficeCustomers.o: passportofficeCustomers.c
+				$(CC) $(CFLAGS) -c passportofficeCustomers.c
+passportofficeCustomers: passportofficeCustomers.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o passportofficeCustomers.o setup.o -o passportofficeCustomers.coff
+				../bin/coff2noff passportofficeCustomers.coff passportofficeCustomers
+passportofficeSenators.o: passportofficeSenators.c
+				$(CC) $(CFLAGS) -c passportofficeSenators.c
+passportofficeSenators: passportofficeSenators.o start.o setup.o
+				$(LD) $(LDFLAGS) start.o passportofficeSenators.o setup.o -o passportofficeSenators.coff
+				../bin/coff2noff passportofficeSenators.coff passportofficeSenators
 
 locktest.o: locktest.c
 				$(CC) $(CFLAGS) -c locktest.c
@@ -248,6 +309,7 @@ signalTest.o: signalTest.c
 signalTest: signalTest.o start.o
 				$(LD) $(LDFLAGS) start.o signalTest.o -o signalTest.coff
 				../bin/coff2noff signalTest.coff signalTest
+
 
 
 

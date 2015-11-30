@@ -267,7 +267,9 @@ return rand() % mod + plus;
 
 int GetThreadArgs_sys() {
 //cout << "currentThread::::" << currentThread->getName() << "_" << currentThread->id << endl;
-  return threadArgs[currentThread->id];
+  //cout << "Current thread stuff: " << machineId << " " << currentThread->mailbox << endl;
+  //return threadArgs[currentThread->id];
+  return (machineId*1000 +  currentThread->mailbox);
 }
 
 void PrintString_sys(unsigned int vaddr, int len) {
@@ -539,14 +541,15 @@ void ExceptionHandler(ExceptionType which) {
             AddrSpace* as = new AddrSpace(filePointer); // Create new addrespace for this executable file
             delete [] nameOfProcess; //TODO: MOVE THIS DELETE AROUND< PLS
             Thread* newThread = new Thread("ExecThread", mailboxCounter);
-            ++mailboxCounter;
+
             newThread->space = as; //Allocate the space created to this thread's space
             processTable->processEntries[processCount] = new ProcessEntry();
             processTable->processEntries[processCount]->space = as;
             processTable->processEntries[processCount]->spaceId = processCount;
             processTable->processEntries[newThread->space->processId]->stackLocations[newThread->id] = as->StackTopForMain;
             rv = newThread->space->spaceId;
-            newThread->Fork((VoidFunctionPtr)exec_thread, 0);
+            newThread->Fork((VoidFunctionPtr)exec_thread, mailboxCounter); //0 -> mailboxCounter TODO: check mailboxcounter propagation
+            ++mailboxCounter;
             kernelLock->Release();
           }else{
               printf("%s", "Couldn't open file\n");

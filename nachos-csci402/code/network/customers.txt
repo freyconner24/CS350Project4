@@ -1,0 +1,1384 @@
+Starting User Program.
+Assigned space.
+Accessing process table.
+Saving processEntry.
+Setting up locks, conditions and monitor variables: 0
+1
+Starting Test 1
+str: 0 3 0 L C -1 -1 -1 ServerClerkLock
+receivedString 0
+Client::CreateLock:: 0
+str: 0 3 0 L C -1 -1 -1 ServerCustomerLock
+receivedString 1
+Client::CreateLock:: 1
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorLineCV
+Client::CreateCondition::receivedString: 0
+str: 0 3 0 L C -1 -1 -1 ClerkLineLock
+receivedString 2
+Client::CreateLock:: 2
+str: 0 3 0 C C -1 -1 -1 OutsideLineCV
+Client::CreateCondition::receivedString: 1
+str: 0 3 0 L C -1 -1 -1 OutsideLock
+receivedString 3
+Client::CreateLock:: 3
+str: 0 3 0 L C -1 -1 -1 SenatorLock
+receivedString 4
+Client::CreateLock:: 4
+str: 0 3 0 C C -1 -1 -1 SenatorLineCV
+Client::CreateCondition::receivedString: 2
+str: 0 3 0 M C 1 -1 -1 AllCustomersAreDone
+str: 0 3 0 M C 1 -1 -1 SenatorLineCount
+str: 0 3 0 M C 1 -1 -1 SenatorDone
+str: 0 3 0 M C 1 -1 -1 OutsideLineCount
+str: 0 3 0 M C 5 -1 -1 ClerkLineCount
+str: 0 3 0 M C 5 -1 -1 clerkBribeLineCount
+str: 0 3 0 M C 5 -1 -1 clerkStates
+str: 0 3 0 M C 5 -1 -1 clerkMoney
+str: 0 3 0 M C 5 -1 -1 customerData
+str: 0 3 0 M C 5 -1 -1 ClerkOwner
+Before custAttr: 8str: 0 3 0 M C 8 -1 -1 SSNMon
+str: 0 3 0 M C 8 -1 -1 likesPictureMon
+str: 0 3 0 M C 8 -1 -1 applicationIsFiledMon
+str: 0 3 0 M C 8 -1 -1 hasCertificationMon
+str: 0 3 0 M C 8 -1 -1 isDoneMon
+str: 0 3 0 M C 8 -1 -1 clerkMessedUpMon
+str: 0 3 0 M C 8 -1 -1 moneyMon
+str: 0 3 0 L C -1 -1 -1 ClerkLock_0
+receivedString 5
+Client::CreateLock:: 5
+str: 0 3 0 C C -1 -1 -1 ClerkCV_0
+Client::CreateCondition::receivedString: 3
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_0
+Client::CreateCondition::receivedString: 4
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_0
+Client::CreateCondition::receivedString: 5
+str: 0 3 0 L C -1 -1 -1 BreakLock_0
+receivedString 6
+Client::CreateLock:: 6
+str: 0 3 0 C C -1 -1 -1 BreakCV_0
+Client::CreateCondition::receivedString: 6
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_0
+Client::CreateCondition::receivedString: 7
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock0
+receivedString 7
+Client::CreateLock:: 7
+str: 0 3 0 L C -1 -1 -1 ClerkLock_1
+receivedString 8
+Client::CreateLock:: 8
+str: 0 3 0 C C -1 -1 -1 ClerkCV_1
+Client::CreateCondition::receivedString: 8
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_1
+Client::CreateCondition::receivedString: 9
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_1
+Client::CreateCondition::receivedString: 10
+str: 0 3 0 L C -1 -1 -1 BreakLock_1
+receivedString 9
+Client::CreateLock:: 9
+str: 0 3 0 C C -1 -1 -1 BreakCV_1
+Client::CreateCondition::receivedString: 11
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_1
+Client::CreateCondition::receivedString: 12
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock1
+receivedString 10
+Client::CreateLock:: 10
+str: 0 3 0 L C -1 -1 -1 ClerkLock_2
+receivedString 11
+Client::CreateLock:: 11
+str: 0 3 0 C C -1 -1 -1 ClerkCV_2
+Client::CreateCondition::receivedString: 13
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_2
+Client::CreateCondition::receivedString: 14
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_2
+Client::CreateCondition::receivedString: 15
+str: 0 3 0 L C -1 -1 -1 BreakLock_2
+receivedString 12
+Client::CreateLock:: 12
+str: 0 3 0 C C -1 -1 -1 BreakCV_2
+Client::CreateCondition::receivedString: 16
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_2
+Client::CreateCondition::receivedString: 17
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock2
+receivedString 13
+Client::CreateLock:: 13
+str: 0 3 0 L C -1 -1 -1 ClerkLock_3
+receivedString 14
+Client::CreateLock:: 14
+str: 0 3 0 C C -1 -1 -1 ClerkCV_3
+Client::CreateCondition::receivedString: 18
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_3
+Client::CreateCondition::receivedString: 19
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_3
+Client::CreateCondition::receivedString: 20
+str: 0 3 0 L C -1 -1 -1 BreakLock_3
+receivedString 15
+Client::CreateLock:: 15
+str: 0 3 0 C C -1 -1 -1 BreakCV_3
+Client::CreateCondition::receivedString: 21
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_3
+Client::CreateCondition::receivedString: 22
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock3
+receivedString 16
+Client::CreateLock:: 16
+str: 0 3 0 L C -1 -1 -1 ClerkLock_4
+receivedString 17
+Client::CreateLock:: 17
+str: 0 3 0 C C -1 -1 -1 ClerkCV_4
+Client::CreateCondition::receivedString: 23
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_4
+Client::CreateCondition::receivedString: 24
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_4
+Client::CreateCondition::receivedString: 25
+str: 0 3 0 L C -1 -1 -1 BreakLock_4
+receivedString 18
+Client::CreateLock:: 18
+str: 0 3 0 C C -1 -1 -1 BreakCV_4
+Client::CreateCondition::receivedString: 26
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_4
+Client::CreateCondition::receivedString: 27
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock4
+receivedString 19
+Client::CreateLock:: 19
+ApplicationClerk setting clerktype: 0
+PictureClerk setting clerktype: 1
+PassportClerk setting clerktype: 2
+Cashier setting clerktype: 3
+Cashier setting clerktype: 4
++++++Customer instantiation
++++++Customer created with number: 0
++++++Customer created with number: 1
++++++Customer created with number: 2
++++++Customer created with number: 3
++++++Customer created with number: 4
++++++Customer created with number: 5
++++++Customer created with number: 6
+-----------Exit Output: 0
+Not last process and last thread, deleting process.
+1
+Starting Test 1
+str: 0 3 0 L C -1 -1 -1 ServerClerkLock
+1
+Starting Test 1
+str: 0 3 1 L C -1 -1 -1 ServerClerkLock
+1
+Starting Test 1
+str: 0 3 2 L C -1 -1 -1 ServerClerkLock
+1
+Starting Test 1
+str: 0 3 3 L C -1 -1 -1 ServerClerkLock
+1
+Starting Test 1
+str: 0 3 4 L C -1 -1 -1 ServerClerkLock
+1
+Starting Test 1
+str: 0 3 5 L C -1 -1 -1 ServerClerkLock
+1
+Starting Test 1
+str: 0 3 6 L C -1 -1 -1 ServerClerkLock
+receivedString 0
+Client::CreateLock:: 0
+str: 0 3 0 L C -1 -1 -1 ServerCustomerLock
+receivedString 0
+Client::CreateLock:: 0
+str: 0 3 1 L C -1 -1 -1 ServerCustomerLock
+receivedString 0
+Client::CreateLock:: 0
+str: 0 3 3 L C -1 -1 -1 ServerCustomerLock
+receivedString 0
+Client::CreateLock:: 0
+str: 0 3 5 L C -1 -1 -1 ServerCustomerLock
+receivedString 0
+Client::CreateLock:: 0
+str: 0 3 2 L C -1 -1 -1 ServerCustomerLock
+receivedString 0
+Client::CreateLock:: 0
+str: 0 3 4 L C -1 -1 -1 ServerCustomerLock
+receivedString 0
+Client::CreateLock:: 0
+str: 0 3 6 L C -1 -1 -1 ServerCustomerLock
+receivedString 1
+Client::CreateLock:: 1
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorLineCV
+receivedString 1
+Client::CreateLock:: 1
+str: 0 3 1 C C -1 -1 -1 ClerkSenatorLineCV
+receivedString 1
+Client::CreateLock:: 1
+str: 0 3 3 C C -1 -1 -1 ClerkSenatorLineCV
+receivedString 1
+Client::CreateLock:: 1
+str: 0 3 5 C C -1 -1 -1 ClerkSenatorLineCV
+receivedString 1
+Client::CreateLock:: 1
+str: 0 3 2 C C -1 -1 -1 ClerkSenatorLineCV
+receivedString 1
+Client::CreateLock:: 1
+str: 0 3 4 C C -1 -1 -1 ClerkSenatorLineCV
+receivedString 1
+Client::CreateLock:: 1
+str: 0 3 6 C C -1 -1 -1 ClerkSenatorLineCV
+Client::CreateCondition::receivedString: 0
+str: 0 3 0 L C -1 -1 -1 ClerkLineLock
+Client::CreateCondition::receivedString: 0
+str: 0 3 1 L C -1 -1 -1 ClerkLineLock
+Client::CreateCondition::receivedString: 0
+str: 0 3 3 L C -1 -1 -1 ClerkLineLock
+Client::CreateCondition::receivedString: 0
+str: 0 3 5 L C -1 -1 -1 ClerkLineLock
+Client::CreateCondition::receivedString: 0
+str: 0 3 2 L C -1 -1 -1 ClerkLineLock
+Client::CreateCondition::receivedString: 0
+str: 0 3 4 L C -1 -1 -1 ClerkLineLock
+Client::CreateCondition::receivedString: 0
+str: 0 3 6 L C -1 -1 -1 ClerkLineLock
+receivedString 2
+Client::CreateLock:: 2
+str: 0 3 0 C C -1 -1 -1 OutsideLineCV
+receivedString 2
+Client::CreateLock:: 2
+str: 0 3 1 C C -1 -1 -1 OutsideLineCV
+receivedString 2
+Client::CreateLock:: 2
+str: 0 3 3 C C -1 -1 -1 OutsideLineCV
+receivedString 2
+Client::CreateLock:: 2
+str: 0 3 5 C C -1 -1 -1 OutsideLineCV
+receivedString 2
+Client::CreateLock:: 2
+str: 0 3 2 C C -1 -1 -1 OutsideLineCV
+receivedString 2
+Client::CreateLock:: 2
+str: 0 3 6 C C -1 -1 -1 OutsideLineCV
+receivedString 2
+Client::CreateLock:: 2
+str: 0 3 4 C C -1 -1 -1 OutsideLineCV
+Client::CreateCondition::receivedString: 1
+str: 0 3 0 L C -1 -1 -1 OutsideLock
+Client::CreateCondition::receivedString: 1
+str: 0 3 1 L C -1 -1 -1 OutsideLock
+Client::CreateCondition::receivedString: 1
+str: 0 3 3 L C -1 -1 -1 OutsideLock
+Client::CreateCondition::receivedString: 1
+str: 0 3 5 L C -1 -1 -1 OutsideLock
+Client::CreateCondition::receivedString: 1
+str: 0 3 2 L C -1 -1 -1 OutsideLock
+Client::CreateCondition::receivedString: 1
+str: 0 3 4 L C -1 -1 -1 OutsideLock
+Client::CreateCondition::receivedString: 1
+str: 0 3 6 L C -1 -1 -1 OutsideLock
+receivedString 3
+Client::CreateLock:: 3
+str: 0 3 0 L C -1 -1 -1 SenatorLock
+receivedString 3
+Client::CreateLock:: 3
+str: 0 3 1 L C -1 -1 -1 SenatorLock
+receivedString 3
+Client::CreateLock:: 3
+str: 0 3 3 L C -1 -1 -1 SenatorLock
+receivedString 3
+Client::CreateLock:: 3
+str: 0 3 5 L C -1 -1 -1 SenatorLock
+receivedString 3
+Client::CreateLock:: 3
+str: 0 3 2 L C -1 -1 -1 SenatorLock
+receivedString 3
+Client::CreateLock:: 3
+str: 0 3 4 L C -1 -1 -1 SenatorLock
+receivedString 3
+Client::CreateLock:: 3
+str: 0 3 6 L C -1 -1 -1 SenatorLock
+receivedString 4
+Client::CreateLock:: 4
+str: 0 3 0 C C -1 -1 -1 SenatorLineCV
+receivedString 4
+Client::CreateLock:: 4
+str: 0 3 1 C C -1 -1 -1 SenatorLineCV
+receivedString 4
+Client::CreateLock:: 4
+str: 0 3 5 C C -1 -1 -1 SenatorLineCV
+receivedString 4
+Client::CreateLock:: 4
+str: 0 3 2 C C -1 -1 -1 SenatorLineCV
+receivedString 4
+Client::CreateLock:: 4
+str: 0 3 3 C C -1 -1 -1 SenatorLineCV
+receivedString 4
+Client::CreateLock:: 4
+str: 0 3 4 C C -1 -1 -1 SenatorLineCV
+Client::CreateCondition::receivedString: 2
+str: 0 3 1 M C 1 -1 -1 AllCustomersAreDone
+receivedString 4
+Client::CreateLock:: 4
+str: 0 3 6 C C -1 -1 -1 SenatorLineCV
+Client::CreateCondition::receivedString: 2
+str: 0 3 5 M C 1 -1 -1 AllCustomersAreDone
+Client::CreateCondition::receivedString: 2
+str: 0 3 0 M C 1 -1 -1 AllCustomersAreDone
+Client::CreateCondition::receivedString: 2
+str: 0 3 2 M C 1 -1 -1 AllCustomersAreDone
+Client::CreateCondition::receivedString: 2
+str: 0 3 3 M C 1 -1 -1 AllCustomersAreDone
+Client::CreateCondition::receivedString: 2
+str: 0 3 4 M C 1 -1 -1 AllCustomersAreDone
+str: 0 3 1 M C 1 -1 -1 SenatorLineCount
+Client::CreateCondition::receivedString: 2
+str: 0 3 6 M C 1 -1 -1 AllCustomersAreDone
+str: 0 3 5 M C 1 -1 -1 SenatorLineCount
+str: 0 3 0 M C 1 -1 -1 SenatorLineCount
+str: 0 3 2 M C 1 -1 -1 SenatorLineCount
+str: 0 3 3 M C 1 -1 -1 SenatorLineCount
+str: 0 3 4 M C 1 -1 -1 SenatorLineCount
+str: 0 3 1 M C 1 -1 -1 SenatorDone
+str: 0 3 6 M C 1 -1 -1 SenatorLineCount
+str: 0 3 5 M C 1 -1 -1 SenatorDone
+str: 0 3 0 M C 1 -1 -1 SenatorDone
+str: 0 3 2 M C 1 -1 -1 SenatorDone
+str: 0 3 3 M C 1 -1 -1 SenatorDone
+str: 0 3 4 M C 1 -1 -1 SenatorDone
+str: 0 3 1 M C 1 -1 -1 OutsideLineCount
+str: 0 3 6 M C 1 -1 -1 SenatorDone
+str: 0 3 5 M C 1 -1 -1 OutsideLineCount
+str: 0 3 0 M C 1 -1 -1 OutsideLineCount
+str: 0 3 2 M C 1 -1 -1 OutsideLineCount
+str: 0 3 3 M C 1 -1 -1 OutsideLineCount
+str: 0 3 4 M C 1 -1 -1 OutsideLineCount
+str: 0 3 6 M C 1 -1 -1 OutsideLineCount
+str: 0 3 5 M C 5 -1 -1 ClerkLineCount
+str: 0 3 1 M C 5 -1 -1 ClerkLineCount
+str: 0 3 3 M C 5 -1 -1 ClerkLineCount
+str: 0 3 0 M C 5 -1 -1 ClerkLineCount
+str: 0 3 4 M C 5 -1 -1 ClerkLineCount
+str: 0 3 2 M C 5 -1 -1 ClerkLineCount
+str: 0 3 6 M C 5 -1 -1 ClerkLineCount
+str: 0 3 5 M C 5 -1 -1 clerkBribeLineCount
+str: 0 3 1 M C 5 -1 -1 clerkBribeLineCount
+str: 0 3 3 M C 5 -1 -1 clerkBribeLineCount
+str: 0 3 0 M C 5 -1 -1 clerkBribeLineCount
+str: 0 3 4 M C 5 -1 -1 clerkBribeLineCount
+str: 0 3 2 M C 5 -1 -1 clerkBribeLineCount
+str: 0 3 6 M C 5 -1 -1 clerkBribeLineCount
+str: 0 3 5 M C 5 -1 -1 clerkStates
+str: 0 3 1 M C 5 -1 -1 clerkStates
+str: 0 3 3 M C 5 -1 -1 clerkStates
+str: 0 3 0 M C 5 -1 -1 clerkStates
+str: 0 3 4 M C 5 -1 -1 clerkStates
+str: 0 3 2 M C 5 -1 -1 clerkStates
+str: 0 3 6 M C 5 -1 -1 clerkStates
+str: 0 3 5 M C 5 -1 -1 clerkMoney
+str: 0 3 1 M C 5 -1 -1 clerkMoney
+str: 0 3 3 M C 5 -1 -1 clerkMoney
+str: 0 3 0 M C 5 -1 -1 clerkMoney
+str: 0 3 4 M C 5 -1 -1 clerkMoney
+str: 0 3 2 M C 5 -1 -1 clerkMoney
+str: 0 3 6 M C 5 -1 -1 clerkMoney
+str: 0 3 5 M C 5 -1 -1 customerData
+str: 0 3 1 M C 5 -1 -1 customerData
+str: 0 3 4 M C 5 -1 -1 customerData
+str: 0 3 3 M C 5 -1 -1 customerData
+str: 0 3 2 M C 5 -1 -1 customerData
+str: 0 3 0 M C 5 -1 -1 customerData
+str: 0 3 6 M C 5 -1 -1 customerData
+str: 0 3 5 M C 5 -1 -1 ClerkOwner
+str: 0 3 3 M C 5 -1 -1 ClerkOwner
+str: 0 3 1 M C 5 -1 -1 ClerkOwner
+str: 0 3 2 M C 5 -1 -1 ClerkOwner
+str: 0 3 4 M C 5 -1 -1 ClerkOwner
+str: 0 3 0 M C 5 -1 -1 ClerkOwner
+str: 0 3 6 M C 5 -1 -1 ClerkOwner
+Before custAttr: 8str: 0 3 5 M C 8 -1 -1 SSNMon
+Before custAttr: 8str: 0 3 3 M C 8 -1 -1 SSNMon
+Before custAttr: 8str: 0 3 1 M C 8 -1 -1 SSNMon
+Before custAttr: 8str: 0 3 2 M C 8 -1 -1 SSNMon
+Before custAttr: 8str: 0 3 4 M C 8 -1 -1 SSNMon
+Before custAttr: 8str: 0 3 0 M C 8 -1 -1 SSNMon
+Before custAttr: 8str: 0 3 6 M C 8 -1 -1 SSNMon
+str: 0 3 5 M C 8 -1 -1 likesPictureMon
+str: 0 3 3 M C 8 -1 -1 likesPictureMon
+str: 0 3 1 M C 8 -1 -1 likesPictureMon
+str: 0 3 2 M C 8 -1 -1 likesPictureMon
+str: 0 3 4 M C 8 -1 -1 likesPictureMon
+str: 0 3 0 M C 8 -1 -1 likesPictureMon
+str: 0 3 2 M C 8 -1 -1 applicationIsFiledMon
+str: 0 3 6 M C 8 -1 -1 likesPictureMon
+str: 0 3 5 M C 8 -1 -1 applicationIsFiledMon
+str: 0 3 3 M C 8 -1 -1 applicationIsFiledMon
+str: 0 3 4 M C 8 -1 -1 applicationIsFiledMon
+str: 0 3 1 M C 8 -1 -1 applicationIsFiledMon
+str: 0 3 0 M C 8 -1 -1 applicationIsFiledMon
+str: 0 3 2 M C 8 -1 -1 hasCertificationMon
+str: 0 3 6 M C 8 -1 -1 applicationIsFiledMon
+str: 0 3 5 M C 8 -1 -1 hasCertificationMon
+str: 0 3 3 M C 8 -1 -1 hasCertificationMon
+str: 0 3 4 M C 8 -1 -1 hasCertificationMon
+str: 0 3 1 M C 8 -1 -1 hasCertificationMon
+str: 0 3 0 M C 8 -1 -1 hasCertificationMon
+str: 0 3 2 M C 8 -1 -1 isDoneMon
+str: 0 3 6 M C 8 -1 -1 hasCertificationMon
+str: 0 3 5 M C 8 -1 -1 isDoneMon
+str: 0 3 3 M C 8 -1 -1 isDoneMon
+str: 0 3 4 M C 8 -1 -1 isDoneMon
+str: 0 3 6 M C 8 -1 -1 isDoneMon
+str: 0 3 1 M C 8 -1 -1 isDoneMon
+str: 0 3 5 M C 8 -1 -1 clerkMessedUpMon
+str: 0 3 0 M C 8 -1 -1 isDoneMon
+str: 0 3 3 M C 8 -1 -1 clerkMessedUpMon
+str: 0 3 2 M C 8 -1 -1 clerkMessedUpMon
+str: 0 3 4 M C 8 -1 -1 clerkMessedUpMon
+str: 0 3 6 M C 8 -1 -1 clerkMessedUpMon
+str: 0 3 1 M C 8 -1 -1 clerkMessedUpMon
+str: 0 3 5 M C 8 -1 -1 moneyMon
+str: 0 3 0 M C 8 -1 -1 clerkMessedUpMon
+str: 0 3 3 M C 8 -1 -1 moneyMon
+str: 0 3 2 M C 8 -1 -1 moneyMon
+str: 0 3 4 M C 8 -1 -1 moneyMon
+str: 0 3 6 M C 8 -1 -1 moneyMon
+str: 0 3 1 M C 8 -1 -1 moneyMon
+str: 0 3 5 L C -1 -1 -1 ClerkLock_0
+str: 0 3 0 M C 8 -1 -1 moneyMon
+str: 0 3 3 L C -1 -1 -1 ClerkLock_0
+str: 0 3 2 L C -1 -1 -1 ClerkLock_0
+str: 0 3 4 L C -1 -1 -1 ClerkLock_0
+str: 0 3 6 L C -1 -1 -1 ClerkLock_0
+str: 0 3 1 L C -1 -1 -1 ClerkLock_0
+receivedString 5
+Client::CreateLock:: 5
+str: 0 3 5 C C -1 -1 -1 ClerkCV_0
+str: 0 3 0 L C -1 -1 -1 ClerkLock_0
+receivedString 5
+Client::CreateLock:: 5
+str: 0 3 3 C C -1 -1 -1 ClerkCV_0
+receivedString 5
+Client::CreateLock:: 5
+str: 0 3 2 C C -1 -1 -1 ClerkCV_0
+receivedString 5
+Client::CreateLock:: 5
+str: 0 3 4 C C -1 -1 -1 ClerkCV_0
+receivedString 5
+Client::CreateLock:: 5
+str: 0 3 6 C C -1 -1 -1 ClerkCV_0
+receivedString 5
+Client::CreateLock:: 5
+str: 0 3 1 C C -1 -1 -1 ClerkCV_0
+Client::CreateCondition::receivedString: 3
+str: 0 3 5 C C -1 -1 -1 ClerkLineCV_0
+receivedString 5
+Client::CreateLock:: 5
+str: 0 3 0 C C -1 -1 -1 ClerkCV_0
+Client::CreateCondition::receivedString: 3
+str: 0 3 3 C C -1 -1 -1 ClerkLineCV_0
+Client::CreateCondition::receivedString: 3
+str: 0 3 2 C C -1 -1 -1 ClerkLineCV_0
+Client::CreateCondition::receivedString: 3
+str: 0 3 4 C C -1 -1 -1 ClerkLineCV_0
+Client::CreateCondition::receivedString: 3
+str: 0 3 6 C C -1 -1 -1 ClerkLineCV_0
+Client::CreateCondition::receivedString: 3
+str: 0 3 1 C C -1 -1 -1 ClerkLineCV_0
+Client::CreateCondition::receivedString: 4
+str: 0 3 5 C C -1 -1 -1 ClerkBribeLineCV_0
+Client::CreateCondition::receivedString: 3
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_0
+Client::CreateCondition::receivedString: 4
+str: 0 3 3 C C -1 -1 -1 ClerkBribeLineCV_0
+Client::CreateCondition::receivedString: 4
+str: 0 3 2 C C -1 -1 -1 ClerkBribeLineCV_0
+Client::CreateCondition::receivedString: 4
+str: 0 3 4 C C -1 -1 -1 ClerkBribeLineCV_0
+Client::CreateCondition::receivedString: 4
+str: 0 3 6 C C -1 -1 -1 ClerkBribeLineCV_0
+Client::CreateCondition::receivedString: 5
+str: 0 3 2 L C -1 -1 -1 BreakLock_0
+Client::CreateCondition::receivedString: 4
+str: 0 3 1 C C -1 -1 -1 ClerkBribeLineCV_0
+Client::CreateCondition::receivedString: 5
+str: 0 3 5 L C -1 -1 -1 BreakLock_0
+Client::CreateCondition::receivedString: 4
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_0
+Client::CreateCondition::receivedString: 5
+str: 0 3 3 L C -1 -1 -1 BreakLock_0
+Client::CreateCondition::receivedString: 5
+str: 0 3 4 L C -1 -1 -1 BreakLock_0
+Client::CreateCondition::receivedString: 5
+str: 0 3 6 L C -1 -1 -1 BreakLock_0
+receivedString 6
+Client::CreateLock:: 6
+str: 0 3 2 C C -1 -1 -1 BreakCV_0
+Client::CreateCondition::receivedString: 5
+str: 0 3 1 L C -1 -1 -1 BreakLock_0
+receivedString 6
+Client::CreateLock:: 6
+str: 0 3 5 C C -1 -1 -1 BreakCV_0
+Client::CreateCondition::receivedString: 5
+str: 0 3 0 L C -1 -1 -1 BreakLock_0
+receivedString 6
+Client::CreateLock:: 6
+str: 0 3 6 C C -1 -1 -1 BreakCV_0
+receivedString 6
+Client::CreateLock:: 6
+str: 0 3 3 C C -1 -1 -1 BreakCV_0
+receivedString 6
+Client::CreateLock:: 6
+str: 0 3 4 C C -1 -1 -1 BreakCV_0
+Client::CreateCondition::receivedString: 6
+str: 0 3 2 C C -1 -1 -1 ClerkSenatorCV_0
+receivedString 6
+Client::CreateLock:: 6
+str: 0 3 1 C C -1 -1 -1 BreakCV_0
+Client::CreateCondition::receivedString: 6
+str: 0 3 5 C C -1 -1 -1 ClerkSenatorCV_0
+receivedString 6
+Client::CreateLock:: 6
+str: 0 3 0 C C -1 -1 -1 BreakCV_0
+Client::CreateCondition::receivedString: 6
+str: 0 3 6 C C -1 -1 -1 ClerkSenatorCV_0
+Client::CreateCondition::receivedString: 6
+str: 0 3 3 C C -1 -1 -1 ClerkSenatorCV_0
+Client::CreateCondition::receivedString: 6
+str: 0 3 4 C C -1 -1 -1 ClerkSenatorCV_0
+Client::CreateCondition::receivedString: 7
+str: 0 3 2 L C -1 -1 -1 ClerkSenatorCVLock0
+Client::CreateCondition::receivedString: 6
+str: 0 3 1 C C -1 -1 -1 ClerkSenatorCV_0
+Client::CreateCondition::receivedString: 7
+str: 0 3 5 L C -1 -1 -1 ClerkSenatorCVLock0
+Client::CreateCondition::receivedString: 6
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_0
+Client::CreateCondition::receivedString: 7
+str: 0 3 6 L C -1 -1 -1 ClerkSenatorCVLock0
+Client::CreateCondition::receivedString: 7
+str: 0 3 3 L C -1 -1 -1 ClerkSenatorCVLock0
+Client::CreateCondition::receivedString: 7
+str: 0 3 4 L C -1 -1 -1 ClerkSenatorCVLock0
+receivedString 7
+Client::CreateLock:: 7
+str: 0 3 2 L C -1 -1 -1 ClerkLock_1
+Client::CreateCondition::receivedString: 7
+str: 0 3 1 L C -1 -1 -1 ClerkSenatorCVLock0
+receivedString 7
+Client::CreateLock:: 7
+str: 0 3 5 L C -1 -1 -1 ClerkLock_1
+Client::CreateCondition::receivedString: 7
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock0
+receivedString 7
+Client::CreateLock:: 7
+str: 0 3 1 L C -1 -1 -1 ClerkLock_1
+receivedString 7
+Client::CreateLock:: 7
+str: 0 3 6 L C -1 -1 -1 ClerkLock_1
+receivedString 7
+Client::CreateLock:: 7
+str: 0 3 3 L C -1 -1 -1 ClerkLock_1
+receivedString 7
+Client::CreateLock:: 7
+str: 0 3 4 L C -1 -1 -1 ClerkLock_1
+receivedString 8
+Client::CreateLock:: 8
+str: 0 3 2 C C -1 -1 -1 ClerkCV_1
+receivedString 8
+Client::CreateLock:: 8
+str: 0 3 5 C C -1 -1 -1 ClerkCV_1
+receivedString 7
+Client::CreateLock:: 7
+str: 0 3 0 L C -1 -1 -1 ClerkLock_1
+receivedString 8
+Client::CreateLock:: 8
+str: 0 3 1 C C -1 -1 -1 ClerkCV_1
+receivedString 8
+Client::CreateLock:: 8
+str: 0 3 6 C C -1 -1 -1 ClerkCV_1
+receivedString 8
+Client::CreateLock:: 8
+str: 0 3 3 C C -1 -1 -1 ClerkCV_1
+receivedString 8
+Client::CreateLock:: 8
+str: 0 3 4 C C -1 -1 -1 ClerkCV_1
+Client::CreateCondition::receivedString: 8
+str: 0 3 2 C C -1 -1 -1 ClerkLineCV_1
+Client::CreateCondition::receivedString: 8
+str: 0 3 5 C C -1 -1 -1 ClerkLineCV_1
+receivedString 8
+Client::CreateLock:: 8
+str: 0 3 0 C C -1 -1 -1 ClerkCV_1
+Client::CreateCondition::receivedString: 8
+str: 0 3 1 C C -1 -1 -1 ClerkLineCV_1
+Client::CreateCondition::receivedString: 8
+str: 0 3 6 C C -1 -1 -1 ClerkLineCV_1
+Client::CreateCondition::receivedString: 8
+str: 0 3 3 C C -1 -1 -1 ClerkLineCV_1
+Client::CreateCondition::receivedString: 8
+str: 0 3 4 C C -1 -1 -1 ClerkLineCV_1
+Client::CreateCondition::receivedString: 9
+str: 0 3 2 C C -1 -1 -1 ClerkBribeLineCV_1
+Client::CreateCondition::receivedString: 9
+str: 0 3 5 C C -1 -1 -1 ClerkBribeLineCV_1
+Client::CreateCondition::receivedString: 8
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_1
+Client::CreateCondition::receivedString: 9
+str: 0 3 1 C C -1 -1 -1 ClerkBribeLineCV_1
+Client::CreateCondition::receivedString: 9
+str: 0 3 6 C C -1 -1 -1 ClerkBribeLineCV_1
+Client::CreateCondition::receivedString: 9
+str: 0 3 3 C C -1 -1 -1 ClerkBribeLineCV_1
+Client::CreateCondition::receivedString: 9
+str: 0 3 4 C C -1 -1 -1 ClerkBribeLineCV_1
+Client::CreateCondition::receivedString: 10
+str: 0 3 2 L C -1 -1 -1 BreakLock_1
+Client::CreateCondition::receivedString: 10
+str: 0 3 5 L C -1 -1 -1 BreakLock_1
+Client::CreateCondition::receivedString: 9
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_1
+Client::CreateCondition::receivedString: 10
+str: 0 3 1 L C -1 -1 -1 BreakLock_1
+Client::CreateCondition::receivedString: 10
+str: 0 3 6 L C -1 -1 -1 BreakLock_1
+Client::CreateCondition::receivedString: 10
+str: 0 3 3 L C -1 -1 -1 BreakLock_1
+Client::CreateCondition::receivedString: 10
+str: 0 3 4 L C -1 -1 -1 BreakLock_1
+receivedString 9
+Client::CreateLock:: 9
+str: 0 3 2 C C -1 -1 -1 BreakCV_1
+receivedString 9
+Client::CreateLock:: 9
+str: 0 3 5 C C -1 -1 -1 BreakCV_1
+Client::CreateCondition::receivedString: 10
+str: 0 3 0 L C -1 -1 -1 BreakLock_1
+receivedString 9
+Client::CreateLock:: 9
+str: 0 3 1 C C -1 -1 -1 BreakCV_1
+receivedString 9
+Client::CreateLock:: 9
+str: 0 3 6 C C -1 -1 -1 BreakCV_1
+receivedString 9
+Client::CreateLock:: 9
+str: 0 3 3 C C -1 -1 -1 BreakCV_1
+receivedString 9
+Client::CreateLock:: 9
+str: 0 3 4 C C -1 -1 -1 BreakCV_1
+Client::CreateCondition::receivedString: 11
+str: 0 3 2 C C -1 -1 -1 ClerkSenatorCV_1
+Client::CreateCondition::receivedString: 11
+str: 0 3 5 C C -1 -1 -1 ClerkSenatorCV_1
+receivedString 9
+Client::CreateLock:: 9
+str: 0 3 0 C C -1 -1 -1 BreakCV_1
+Client::CreateCondition::receivedString: 11
+str: 0 3 1 C C -1 -1 -1 ClerkSenatorCV_1
+Client::CreateCondition::receivedString: 11
+str: 0 3 6 C C -1 -1 -1 ClerkSenatorCV_1
+Client::CreateCondition::receivedString: 11
+str: 0 3 3 C C -1 -1 -1 ClerkSenatorCV_1
+Client::CreateCondition::receivedString: 11
+str: 0 3 4 C C -1 -1 -1 ClerkSenatorCV_1
+Client::CreateCondition::receivedString: 12
+str: 0 3 2 L C -1 -1 -1 ClerkSenatorCVLock1
+Client::CreateCondition::receivedString: 12
+str: 0 3 5 L C -1 -1 -1 ClerkSenatorCVLock1
+Client::CreateCondition::receivedString: 11
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_1
+Client::CreateCondition::receivedString: 12
+str: 0 3 1 L C -1 -1 -1 ClerkSenatorCVLock1
+Client::CreateCondition::receivedString: 12
+str: 0 3 6 L C -1 -1 -1 ClerkSenatorCVLock1
+Client::CreateCondition::receivedString: 12
+str: 0 3 3 L C -1 -1 -1 ClerkSenatorCVLock1
+Client::CreateCondition::receivedString: 12
+str: 0 3 4 L C -1 -1 -1 ClerkSenatorCVLock1
+receivedString 10
+Client::CreateLock:: 10
+str: 0 3 2 L C -1 -1 -1 ClerkLock_2
+receivedString 10
+Client::CreateLock:: 10
+str: 0 3 5 L C -1 -1 -1 ClerkLock_2
+Client::CreateCondition::receivedString: 12
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock1
+receivedString 10
+Client::CreateLock:: 10
+str: 0 3 1 L C -1 -1 -1 ClerkLock_2
+receivedString 10
+Client::CreateLock:: 10
+str: 0 3 6 L C -1 -1 -1 ClerkLock_2
+receivedString 10
+Client::CreateLock:: 10
+str: 0 3 3 L C -1 -1 -1 ClerkLock_2
+receivedString 10
+Client::CreateLock:: 10
+str: 0 3 4 L C -1 -1 -1 ClerkLock_2
+receivedString 11
+Client::CreateLock:: 11
+str: 0 3 2 C C -1 -1 -1 ClerkCV_2
+receivedString 11
+Client::CreateLock:: 11
+str: 0 3 5 C C -1 -1 -1 ClerkCV_2
+receivedString 10
+Client::CreateLock:: 10
+str: 0 3 0 L C -1 -1 -1 ClerkLock_2
+receivedString 11
+Client::CreateLock:: 11
+str: 0 3 1 C C -1 -1 -1 ClerkCV_2
+receivedString 11
+Client::CreateLock:: 11
+str: 0 3 6 C C -1 -1 -1 ClerkCV_2
+receivedString 11
+Client::CreateLock:: 11
+str: 0 3 3 C C -1 -1 -1 ClerkCV_2
+receivedString 11
+Client::CreateLock:: 11
+str: 0 3 4 C C -1 -1 -1 ClerkCV_2
+Client::CreateCondition::receivedString: 13
+str: 0 3 2 C C -1 -1 -1 ClerkLineCV_2
+Client::CreateCondition::receivedString: 13
+str: 0 3 5 C C -1 -1 -1 ClerkLineCV_2
+receivedString 11
+Client::CreateLock:: 11
+str: 0 3 0 C C -1 -1 -1 ClerkCV_2
+Client::CreateCondition::receivedString: 13
+str: 0 3 1 C C -1 -1 -1 ClerkLineCV_2
+Client::CreateCondition::receivedString: 13
+str: 0 3 6 C C -1 -1 -1 ClerkLineCV_2
+Client::CreateCondition::receivedString: 13
+str: 0 3 3 C C -1 -1 -1 ClerkLineCV_2
+Client::CreateCondition::receivedString: 13
+str: 0 3 4 C C -1 -1 -1 ClerkLineCV_2
+Client::CreateCondition::receivedString: 14
+str: 0 3 2 C C -1 -1 -1 ClerkBribeLineCV_2
+Client::CreateCondition::receivedString: 14
+str: 0 3 5 C C -1 -1 -1 ClerkBribeLineCV_2
+Client::CreateCondition::receivedString: 13
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_2
+Client::CreateCondition::receivedString: 14
+str: 0 3 1 C C -1 -1 -1 ClerkBribeLineCV_2
+Client::CreateCondition::receivedString: 14
+str: 0 3 6 C C -1 -1 -1 ClerkBribeLineCV_2
+Client::CreateCondition::receivedString: 14
+str: 0 3 3 C C -1 -1 -1 ClerkBribeLineCV_2
+Client::CreateCondition::receivedString: 14
+str: 0 3 4 C C -1 -1 -1 ClerkBribeLineCV_2
+Client::CreateCondition::receivedString: 15
+str: 0 3 2 L C -1 -1 -1 BreakLock_2
+Client::CreateCondition::receivedString: 15
+str: 0 3 5 L C -1 -1 -1 BreakLock_2
+Client::CreateCondition::receivedString: 14
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_2
+Client::CreateCondition::receivedString: 15
+str: 0 3 1 L C -1 -1 -1 BreakLock_2
+Client::CreateCondition::receivedString: 15
+str: 0 3 6 L C -1 -1 -1 BreakLock_2
+Client::CreateCondition::receivedString: 15
+str: 0 3 3 L C -1 -1 -1 BreakLock_2
+Client::CreateCondition::receivedString: 15
+str: 0 3 4 L C -1 -1 -1 BreakLock_2
+receivedString 12
+Client::CreateLock:: 12
+str: 0 3 2 C C -1 -1 -1 BreakCV_2
+receivedString 12
+Client::CreateLock:: 12
+str: 0 3 5 C C -1 -1 -1 BreakCV_2
+Client::CreateCondition::receivedString: 15
+str: 0 3 0 L C -1 -1 -1 BreakLock_2
+receivedString 12
+Client::CreateLock:: 12
+str: 0 3 1 C C -1 -1 -1 BreakCV_2
+receivedString 12
+Client::CreateLock:: 12
+str: 0 3 6 C C -1 -1 -1 BreakCV_2
+receivedString 12
+Client::CreateLock:: 12
+str: 0 3 3 C C -1 -1 -1 BreakCV_2
+receivedString 12
+Client::CreateLock:: 12
+str: 0 3 4 C C -1 -1 -1 BreakCV_2
+Client::CreateCondition::receivedString: 16
+str: 0 3 2 C C -1 -1 -1 ClerkSenatorCV_2
+Client::CreateCondition::receivedString: 16
+str: 0 3 5 C C -1 -1 -1 ClerkSenatorCV_2
+receivedString 12
+Client::CreateLock:: 12
+str: 0 3 0 C C -1 -1 -1 BreakCV_2
+Client::CreateCondition::receivedString: 16
+str: 0 3 1 C C -1 -1 -1 ClerkSenatorCV_2
+Client::CreateCondition::receivedString: 16
+str: 0 3 6 C C -1 -1 -1 ClerkSenatorCV_2
+Client::CreateCondition::receivedString: 16
+str: 0 3 3 C C -1 -1 -1 ClerkSenatorCV_2
+Client::CreateCondition::receivedString: 16
+str: 0 3 4 C C -1 -1 -1 ClerkSenatorCV_2
+Client::CreateCondition::receivedString: 17
+str: 0 3 2 L C -1 -1 -1 ClerkSenatorCVLock2
+Client::CreateCondition::receivedString: 17
+str: 0 3 5 L C -1 -1 -1 ClerkSenatorCVLock2
+Client::CreateCondition::receivedString: 16
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_2
+Client::CreateCondition::receivedString: 17
+str: 0 3 1 L C -1 -1 -1 ClerkSenatorCVLock2
+Client::CreateCondition::receivedString: 17
+str: 0 3 6 L C -1 -1 -1 ClerkSenatorCVLock2
+Client::CreateCondition::receivedString: 17
+str: 0 3 3 L C -1 -1 -1 ClerkSenatorCVLock2
+Client::CreateCondition::receivedString: 17
+str: 0 3 4 L C -1 -1 -1 ClerkSenatorCVLock2
+receivedString 13
+Client::CreateLock:: 13
+str: 0 3 2 L C -1 -1 -1 ClerkLock_3
+receivedString 13
+Client::CreateLock:: 13
+str: 0 3 5 L C -1 -1 -1 ClerkLock_3
+Client::CreateCondition::receivedString: 17
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock2
+receivedString 13
+Client::CreateLock:: 13
+str: 0 3 1 L C -1 -1 -1 ClerkLock_3
+receivedString 13
+Client::CreateLock:: 13
+str: 0 3 6 L C -1 -1 -1 ClerkLock_3
+receivedString 13
+Client::CreateLock:: 13
+str: 0 3 3 L C -1 -1 -1 ClerkLock_3
+receivedString 13
+Client::CreateLock:: 13
+str: 0 3 4 L C -1 -1 -1 ClerkLock_3
+receivedString 14
+Client::CreateLock:: 14
+str: 0 3 2 C C -1 -1 -1 ClerkCV_3
+receivedString 14
+Client::CreateLock:: 14
+str: 0 3 5 C C -1 -1 -1 ClerkCV_3
+receivedString 13
+Client::CreateLock:: 13
+str: 0 3 0 L C -1 -1 -1 ClerkLock_3
+receivedString 14
+Client::CreateLock:: 14
+str: 0 3 1 C C -1 -1 -1 ClerkCV_3
+receivedString 14
+Client::CreateLock:: 14
+str: 0 3 6 C C -1 -1 -1 ClerkCV_3
+receivedString 14
+Client::CreateLock:: 14
+str: 0 3 3 C C -1 -1 -1 ClerkCV_3
+receivedString 14
+Client::CreateLock:: 14
+str: 0 3 4 C C -1 -1 -1 ClerkCV_3
+Client::CreateCondition::receivedString: 18
+str: 0 3 2 C C -1 -1 -1 ClerkLineCV_3
+Client::CreateCondition::receivedString: 18
+str: 0 3 5 C C -1 -1 -1 ClerkLineCV_3
+receivedString 14
+Client::CreateLock:: 14
+str: 0 3 0 C C -1 -1 -1 ClerkCV_3
+Client::CreateCondition::receivedString: 18
+str: 0 3 1 C C -1 -1 -1 ClerkLineCV_3
+Client::CreateCondition::receivedString: 18
+str: 0 3 6 C C -1 -1 -1 ClerkLineCV_3
+Client::CreateCondition::receivedString: 18
+str: 0 3 3 C C -1 -1 -1 ClerkLineCV_3
+Client::CreateCondition::receivedString: 18
+str: 0 3 4 C C -1 -1 -1 ClerkLineCV_3
+Client::CreateCondition::receivedString: 19
+str: 0 3 2 C C -1 -1 -1 ClerkBribeLineCV_3
+Client::CreateCondition::receivedString: 19
+str: 0 3 5 C C -1 -1 -1 ClerkBribeLineCV_3
+Client::CreateCondition::receivedString: 18
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_3
+Client::CreateCondition::receivedString: 19
+str: 0 3 1 C C -1 -1 -1 ClerkBribeLineCV_3
+Client::CreateCondition::receivedString: 19
+str: 0 3 6 C C -1 -1 -1 ClerkBribeLineCV_3
+Client::CreateCondition::receivedString: 19
+str: 0 3 3 C C -1 -1 -1 ClerkBribeLineCV_3
+Client::CreateCondition::receivedString: 19
+str: 0 3 4 C C -1 -1 -1 ClerkBribeLineCV_3
+Client::CreateCondition::receivedString: 20
+str: 0 3 2 L C -1 -1 -1 BreakLock_3
+Client::CreateCondition::receivedString: 20
+str: 0 3 5 L C -1 -1 -1 BreakLock_3
+Client::CreateCondition::receivedString: 19
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_3
+Client::CreateCondition::receivedString: 20
+str: 0 3 1 L C -1 -1 -1 BreakLock_3
+Client::CreateCondition::receivedString: 20
+str: 0 3 6 L C -1 -1 -1 BreakLock_3
+Client::CreateCondition::receivedString: 20
+str: 0 3 3 L C -1 -1 -1 BreakLock_3
+Client::CreateCondition::receivedString: 20
+str: 0 3 4 L C -1 -1 -1 BreakLock_3
+receivedString 15
+Client::CreateLock:: 15
+str: 0 3 2 C C -1 -1 -1 BreakCV_3
+receivedString 15
+Client::CreateLock:: 15
+str: 0 3 5 C C -1 -1 -1 BreakCV_3
+Client::CreateCondition::receivedString: 20
+str: 0 3 0 L C -1 -1 -1 BreakLock_3
+receivedString 15
+Client::CreateLock:: 15
+str: 0 3 1 C C -1 -1 -1 BreakCV_3
+receivedString 15
+Client::CreateLock:: 15
+str: 0 3 6 C C -1 -1 -1 BreakCV_3
+receivedString 15
+Client::CreateLock:: 15
+str: 0 3 3 C C -1 -1 -1 BreakCV_3
+receivedString 15
+Client::CreateLock:: 15
+str: 0 3 4 C C -1 -1 -1 BreakCV_3
+Client::CreateCondition::receivedString: 21
+str: 0 3 2 C C -1 -1 -1 ClerkSenatorCV_3
+Client::CreateCondition::receivedString: 21
+str: 0 3 5 C C -1 -1 -1 ClerkSenatorCV_3
+receivedString 15
+Client::CreateLock:: 15
+str: 0 3 0 C C -1 -1 -1 BreakCV_3
+Client::CreateCondition::receivedString: 21
+str: 0 3 1 C C -1 -1 -1 ClerkSenatorCV_3
+Client::CreateCondition::receivedString: 21
+str: 0 3 6 C C -1 -1 -1 ClerkSenatorCV_3
+Client::CreateCondition::receivedString: 21
+str: 0 3 3 C C -1 -1 -1 ClerkSenatorCV_3
+Client::CreateCondition::receivedString: 21
+str: 0 3 4 C C -1 -1 -1 ClerkSenatorCV_3
+Client::CreateCondition::receivedString: 22
+str: 0 3 2 L C -1 -1 -1 ClerkSenatorCVLock3
+Client::CreateCondition::receivedString: 22
+str: 0 3 5 L C -1 -1 -1 ClerkSenatorCVLock3
+Client::CreateCondition::receivedString: 21
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_3
+Client::CreateCondition::receivedString: 22
+str: 0 3 1 L C -1 -1 -1 ClerkSenatorCVLock3
+Client::CreateCondition::receivedString: 22
+str: 0 3 6 L C -1 -1 -1 ClerkSenatorCVLock3
+Client::CreateCondition::receivedString: 22
+str: 0 3 3 L C -1 -1 -1 ClerkSenatorCVLock3
+Client::CreateCondition::receivedString: 22
+str: 0 3 4 L C -1 -1 -1 ClerkSenatorCVLock3
+receivedString 16
+Client::CreateLock:: 16
+str: 0 3 2 L C -1 -1 -1 ClerkLock_4
+receivedString 16
+Client::CreateLock:: 16
+str: 0 3 5 L C -1 -1 -1 ClerkLock_4
+Client::CreateCondition::receivedString: 22
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock3
+receivedString 16
+Client::CreateLock:: 16
+str: 0 3 1 L C -1 -1 -1 ClerkLock_4
+receivedString 16
+Client::CreateLock:: 16
+str: 0 3 6 L C -1 -1 -1 ClerkLock_4
+receivedString 16
+Client::CreateLock:: 16
+str: 0 3 3 L C -1 -1 -1 ClerkLock_4
+receivedString 16
+Client::CreateLock:: 16
+str: 0 3 4 L C -1 -1 -1 ClerkLock_4
+receivedString 17
+Client::CreateLock:: 17
+str: 0 3 2 C C -1 -1 -1 ClerkCV_4
+receivedString 17
+Client::CreateLock:: 17
+str: 0 3 5 C C -1 -1 -1 ClerkCV_4
+receivedString 16
+Client::CreateLock:: 16
+str: 0 3 0 L C -1 -1 -1 ClerkLock_4
+receivedString 17
+Client::CreateLock:: 17
+str: 0 3 1 C C -1 -1 -1 ClerkCV_4
+receivedString 17
+Client::CreateLock:: 17
+str: 0 3 6 C C -1 -1 -1 ClerkCV_4
+receivedString 17
+Client::CreateLock:: 17
+str: 0 3 3 C C -1 -1 -1 ClerkCV_4
+receivedString 17
+Client::CreateLock:: 17
+str: 0 3 4 C C -1 -1 -1 ClerkCV_4
+Client::CreateCondition::receivedString: 23
+str: 0 3 2 C C -1 -1 -1 ClerkLineCV_4
+Client::CreateCondition::receivedString: 23
+str: 0 3 5 C C -1 -1 -1 ClerkLineCV_4
+receivedString 17
+Client::CreateLock:: 17
+str: 0 3 0 C C -1 -1 -1 ClerkCV_4
+Client::CreateCondition::receivedString: 23
+str: 0 3 1 C C -1 -1 -1 ClerkLineCV_4
+Client::CreateCondition::receivedString: 23
+str: 0 3 6 C C -1 -1 -1 ClerkLineCV_4
+Client::CreateCondition::receivedString: 23
+str: 0 3 3 C C -1 -1 -1 ClerkLineCV_4
+Client::CreateCondition::receivedString: 23
+str: 0 3 4 C C -1 -1 -1 ClerkLineCV_4
+Client::CreateCondition::receivedString: 24
+str: 0 3 2 C C -1 -1 -1 ClerkBribeLineCV_4
+Client::CreateCondition::receivedString: 24
+str: 0 3 5 C C -1 -1 -1 ClerkBribeLineCV_4
+Client::CreateCondition::receivedString: 23
+str: 0 3 0 C C -1 -1 -1 ClerkLineCV_4
+Client::CreateCondition::receivedString: 24
+str: 0 3 1 C C -1 -1 -1 ClerkBribeLineCV_4
+Client::CreateCondition::receivedString: 24
+str: 0 3 6 C C -1 -1 -1 ClerkBribeLineCV_4
+Client::CreateCondition::receivedString: 24
+str: 0 3 3 C C -1 -1 -1 ClerkBribeLineCV_4
+Client::CreateCondition::receivedString: 24
+str: 0 3 4 C C -1 -1 -1 ClerkBribeLineCV_4
+Client::CreateCondition::receivedString: 25
+str: 0 3 2 L C -1 -1 -1 BreakLock_4
+Client::CreateCondition::receivedString: 25
+str: 0 3 5 L C -1 -1 -1 BreakLock_4
+Client::CreateCondition::receivedString: 24
+str: 0 3 0 C C -1 -1 -1 ClerkBribeLineCV_4
+Client::CreateCondition::receivedString: 25
+str: 0 3 1 L C -1 -1 -1 BreakLock_4
+Client::CreateCondition::receivedString: 25
+str: 0 3 6 L C -1 -1 -1 BreakLock_4
+Client::CreateCondition::receivedString: 25
+str: 0 3 3 L C -1 -1 -1 BreakLock_4
+Client::CreateCondition::receivedString: 25
+str: 0 3 4 L C -1 -1 -1 BreakLock_4
+receivedString 18
+Client::CreateLock:: 18
+str: 0 3 2 C C -1 -1 -1 BreakCV_4
+receivedString 18
+Client::CreateLock:: 18
+str: 0 3 5 C C -1 -1 -1 BreakCV_4
+Client::CreateCondition::receivedString: 25
+str: 0 3 0 L C -1 -1 -1 BreakLock_4
+receivedString 18
+Client::CreateLock:: 18
+str: 0 3 1 C C -1 -1 -1 BreakCV_4
+receivedString 18
+Client::CreateLock:: 18
+str: 0 3 6 C C -1 -1 -1 BreakCV_4
+receivedString 18
+Client::CreateLock:: 18
+str: 0 3 3 C C -1 -1 -1 BreakCV_4
+receivedString 18
+Client::CreateLock:: 18
+str: 0 3 4 C C -1 -1 -1 BreakCV_4
+Client::CreateCondition::receivedString: 26
+str: 0 3 2 C C -1 -1 -1 ClerkSenatorCV_4
+Client::CreateCondition::receivedString: 26
+str: 0 3 5 C C -1 -1 -1 ClerkSenatorCV_4
+receivedString 18
+Client::CreateLock:: 18
+str: 0 3 0 C C -1 -1 -1 BreakCV_4
+Client::CreateCondition::receivedString: 26
+str: 0 3 1 C C -1 -1 -1 ClerkSenatorCV_4
+Client::CreateCondition::receivedString: 26
+str: 0 3 6 C C -1 -1 -1 ClerkSenatorCV_4
+Client::CreateCondition::receivedString: 26
+str: 0 3 3 C C -1 -1 -1 ClerkSenatorCV_4
+Client::CreateCondition::receivedString: 26
+str: 0 3 4 C C -1 -1 -1 ClerkSenatorCV_4
+Client::CreateCondition::receivedString: 27
+str: 0 3 2 L C -1 -1 -1 ClerkSenatorCVLock4
+Client::CreateCondition::receivedString: 27
+str: 0 3 5 L C -1 -1 -1 ClerkSenatorCVLock4
+Client::CreateCondition::receivedString: 26
+str: 0 3 0 C C -1 -1 -1 ClerkSenatorCV_4
+Client::CreateCondition::receivedString: 27
+str: 0 3 1 L C -1 -1 -1 ClerkSenatorCVLock4
+Client::CreateCondition::receivedString: 27
+str: 0 3 6 L C -1 -1 -1 ClerkSenatorCVLock4
+Client::CreateCondition::receivedString: 27
+str: 0 3 3 L C -1 -1 -1 ClerkSenatorCVLock4
+Client::CreateCondition::receivedString: 27
+str: 0 3 4 L C -1 -1 -1 ClerkSenatorCVLock4
+receivedString 19
+Client::CreateLock:: 19
+ApplicationClerk setting clerktype: 0
+PictureClerk setting clerktype: 1
+PassportClerk setting clerktype: 2
+Cashier setting clerktype: 3
+Cashier setting clerktype: 4
+str: 0 3 2 L A 1 -1 -1 
+receivedString 19
+Client::CreateLock:: 19
+ApplicationClerk setting clerktype: 0
+PictureClerk setting clerktype: 1
+PassportClerk setting clerktype: 2
+Cashier setting clerktype: 3
+Cashier setting clerktype: 4
+str: 0 3 5 L A 1 -1 -1 
+Client::CreateCondition::receivedString: 27
+str: 0 3 0 L C -1 -1 -1 ClerkSenatorCVLock4
+receivedString 19
+Client::CreateLock:: 19
+ApplicationClerk setting clerktype: 0
+PictureClerk setting clerktype: 1
+PassportClerk setting clerktype: 2
+Cashier setting clerktype: 3
+Cashier setting clerktype: 4
+str: 0 3 1 L A 1 -1 -1 
+receivedString 19
+Client::CreateLock:: 19
+ApplicationClerk setting clerktype: 0
+PictureClerk setting clerktype: 1
+PassportClerk setting clerktype: 2
+Cashier setting clerktype: 3
+Cashier setting clerktype: 4
+str: 0 3 6 L A 1 -1 -1 
+receivedString 19
+Client::CreateLock:: 19
+ApplicationClerk setting clerktype: 0
+PictureClerk setting clerktype: 1
+PassportClerk setting clerktype: 2
+Cashier setting clerktype: 3
+Cashier setting clerktype: 4
+str: 0 3 3 L A 1 -1 -1 
+receivedString 19
+Client::CreateLock:: 19
+ApplicationClerk setting clerktype: 0
+PictureClerk setting clerktype: 1
+PassportClerk setting clerktype: 2
+Cashier setting clerktype: 3
+Cashier setting clerktype: 4
+str: 0 3 4 L A 1 -1 -1 
+Acquire::receivedString: You got the lock!
+str: 0 3 2 M G 10 0 -1 
+receivedString 19
+Client::CreateLock:: 19
+ApplicationClerk setting clerktype: 0
+PictureClerk setting clerktype: 1
+PassportClerk setting clerktype: 2
+Cashier setting clerktype: 3
+Cashier setting clerktype: 4
+str: 0 3 0 L A 1 -1 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 2 M S 10 0 3003 
+Client::SetMonitor::receivedString: Set monitor successfully! 10 0 3003
+ThreadArgs for customer, 3002, 0
+str: 0 3 2 M S 11 0 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 11 0 0
+str: 0 3 2 M S 12 0 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 12 0 0
+str: 0 3 2 M S 13 0 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 13 0 0
+str: 0 3 2 M S 14 0 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 14 0 0
+str: 0 3 2 M S 15 0 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 15 0 0
+str: 0 3 2 M S 16 0 600 
+Client::SetMonitor::receivedString: Set monitor successfully! 16 0 600
+str: 0 3 2 L R 1 -1 -1 
+Release::receivedString: Released. Another thread took it.
+Allocation worked customer,600
+str: 0 3 2 M G 14 0 -1 
+Acquire::receivedString: You got the lock!
+str: 0 3 5 M G 10 0 -1 
+Client::GetMonitor::receivedString: 
+-------Customer starting loop: myLine: -1
+str: 0 3 2 M G 1 0 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 5 M G 10 1 -1 
+Client::GetMonitor::receivedString: 
+Customer acquiring outside: myLine -1
+str: 0 3 2 L A 3 -1 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 5 M S 10 1 3006 
+Acquire::receivedString: You got the lock!
+str: 0 3 2 C W 3 1 -1 
+Client::SetMonitor::receivedString: Set monitor successfully! 10 1 3006
+ThreadArgs for customer, 3005, 1
+str: 0 3 5 M S 11 1 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 11 1 0
+str: 0 3 5 M S 12 1 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 12 1 0
+str: 0 3 5 M S 13 1 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 13 1 0
+str: 0 3 5 M S 14 1 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 14 1 0
+str: 0 3 5 M S 15 1 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 15 1 0
+str: 0 3 5 M S 16 1 1100 
+Client::SetMonitor::receivedString: Set monitor successfully! 16 1 1100
+str: 0 3 5 L R 1 -1 -1 
+Release::receivedString: Released. Another thread took it.
+Allocation worked customer,1100
+str: 0 3 5 M G 14 1 -1 
+Acquire::receivedString: You got the lock!
+str: 0 3 1 M G 10 0 -1 
+Client::GetMonitor::receivedString: 
+-------Customer starting loop: myLine: -1
+str: 0 3 5 M G 1 0 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 1 M G 10 1 -1 
+Client::GetMonitor::receivedString: 
+Customer acquiring outside: myLine -1
+str: 0 3 5 L A 3 -1 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 1 M G 10 2 -1 
+Acquire::receivedString: You got the lock!
+str: 0 3 5 C W 3 1 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 1 M S 10 2 3002 
+Client::SetMonitor::receivedString: Set monitor successfully! 10 2 3002
+ThreadArgs for customer, 3001, 2
+str: 0 3 1 M S 11 2 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 11 2 0
+str: 0 3 1 M S 12 2 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 12 2 0
+str: 0 3 1 M S 13 2 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 13 2 0
+str: 0 3 1 M S 14 2 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 14 2 0
+str: 0 3 1 M S 15 2 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 15 2 0
+str: 0 3 1 M S 16 2 600 
+Client::SetMonitor::receivedString: Set monitor successfully! 16 2 600
+str: 0 3 1 L R 1 -1 -1 
+Release::receivedString: Released. Another thread took it.
+Allocation worked customer,600
+str: 0 3 1 M G 14 2 -1 
+Acquire::receivedString: You got the lock!
+str: 0 3 3 M G 10 0 -1 
+Client::GetMonitor::receivedString: 
+-------Customer starting loop: myLine: -1
+str: 0 3 1 M G 1 0 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 3 M G 10 1 -1 
+Client::GetMonitor::receivedString: 
+Customer acquiring outside: myLine -1
+str: 0 3 1 L A 3 -1 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 3 M G 10 2 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 3 M G 10 3 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 3 M S 10 3 3004 
+Client::SetMonitor::receivedString: Set monitor successfully! 10 3 3004
+ThreadArgs for customer, 3003, 3
+str: 0 3 3 M S 11 3 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 11 3 0
+str: 0 3 3 M S 12 3 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 12 3 0
+str: 0 3 3 M S 13 3 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 13 3 0
+str: 0 3 3 M S 14 3 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 14 3 0
+str: 0 3 3 M S 15 3 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 15 3 0
+str: 0 3 3 M S 16 3 100 
+Client::SetMonitor::receivedString: Set monitor successfully! 16 3 100
+str: 0 3 3 L R 1 -1 -1 
+Release::receivedString: Released. Another thread took it.
+Allocation worked customer,100
+str: 0 3 3 M G 14 3 -1 
+Acquire::receivedString: You got the lock!
+str: 0 3 6 M G 10 0 -1 
+Client::GetMonitor::receivedString: 
+-------Customer starting loop: myLine: -1
+str: 0 3 3 M G 1 0 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 6 M G 10 1 -1 
+Client::GetMonitor::receivedString: 
+Customer acquiring outside: myLine -1
+str: 0 3 3 L A 3 -1 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 6 M G 10 2 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 6 M G 10 3 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 6 M G 10 4 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 6 M S 10 4 3007 
+Client::SetMonitor::receivedString: Set monitor successfully! 10 4 3007
+ThreadArgs for customer, 3006, 4
+str: 0 3 6 M S 11 4 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 11 4 0
+str: 0 3 6 M S 12 4 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 12 4 0
+str: 0 3 6 M S 13 4 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 13 4 0
+str: 0 3 6 M S 14 4 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 14 4 0
+str: 0 3 6 M S 15 4 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 15 4 0
+str: 0 3 6 M S 16 4 600 
+Client::SetMonitor::receivedString: Set monitor successfully! 16 4 600
+str: 0 3 6 L R 1 -1 -1 
+Release::receivedString: Released. Another thread took it.
+Allocation worked customer,600
+str: 0 3 6 M G 14 4 -1 
+Acquire::receivedString: You got the lock!
+str: 0 3 4 M G 10 0 -1 
+Client::GetMonitor::receivedString: 
+-------Customer starting loop: myLine: -1
+str: 0 3 6 M G 1 0 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 4 M G 10 1 -1 
+Client::GetMonitor::receivedString: 
+Customer acquiring outside: myLine -1
+str: 0 3 6 L A 3 -1 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 4 M G 10 2 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 4 M G 10 3 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 4 M G 10 4 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 4 M G 10 5 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 4 M S 10 5 3005 
+Client::SetMonitor::receivedString: Set monitor successfully! 10 5 3005
+ThreadArgs for customer, 3004, 5
+str: 0 3 4 M S 11 5 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 11 5 0
+str: 0 3 4 M S 12 5 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 12 5 0
+str: 0 3 4 M S 13 5 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 13 5 0
+str: 0 3 4 M S 14 5 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 14 5 0
+str: 0 3 4 M S 15 5 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 15 5 0
+str: 0 3 4 M S 16 5 100 
+Client::SetMonitor::receivedString: Set monitor successfully! 16 5 100
+str: 0 3 4 L R 1 -1 -1 
+Release::receivedString: Released. Another thread took it.
+Allocation worked customer,100
+str: 0 3 4 M G 14 5 -1 
+Acquire::receivedString: You got the lock!
+str: 0 3 0 M G 10 0 -1 
+Client::GetMonitor::receivedString: 
+-------Customer starting loop: myLine: -1
+str: 0 3 4 M G 1 0 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 0 M G 10 1 -1 
+Client::GetMonitor::receivedString: 
+Customer acquiring outside: myLine -1
+str: 0 3 4 L A 3 -1 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 0 M G 10 2 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 0 M G 10 3 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 0 M G 10 4 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 0 M G 10 5 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 0 M G 10 6 -1 
+Client::GetMonitor::receivedString: 
+str: 0 3 0 M S 10 6 3001 
+Client::SetMonitor::receivedString: Set monitor successfully! 10 6 3001
+ThreadArgs for customer, 3000, 6
+str: 0 3 0 M S 11 6 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 11 6 0
+str: 0 3 0 M S 12 6 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 12 6 0
+str: 0 3 0 M S 13 6 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 13 6 0
+str: 0 3 0 M S 14 6 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 14 6 0
+str: 0 3 0 M S 15 6 0 
+Client::SetMonitor::receivedString: Set monitor successfully! 15 6 0
+str: 0 3 0 M S 16 6 600 
+Client::SetMonitor::receivedString: Set monitor successfully! 16 6 600
+str: 0 3 0 L R 1 -1 -1 
+Release::receivedString: You released the lock!
+Allocation worked customer,600
+str: 0 3 0 M G 14 6 -1 
+Client::GetMonitor::receivedString: 
+-------Customer starting loop: myLine: -1
+str: 0 3 0 M G 1 0 -1 
+Client::GetMonitor::receivedString: 
+Customer acquiring outside: myLine -1
+str: 0 3 0 L A 3 -1 -1 
