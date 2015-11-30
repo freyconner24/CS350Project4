@@ -22,7 +22,7 @@ int main(){
 	cond2 = CreateCondition("Cond2", 5, 0);
 	PrintString("Setting monitors\n", 17);
   Acquire(lock1);
-	SetMonitor(mon1, 0, 9);
+	SetMonitor(mon1, 0, 190);
 	for (i = 0; i < 30000; ++i){
 		Yield();
 	}

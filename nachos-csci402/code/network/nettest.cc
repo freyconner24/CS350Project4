@@ -867,7 +867,8 @@ int GetMonitor_server(int monitorIndex, int arrayIndex,PacketHeader &pktHdr, Mai
     stringstream ss;
     ss << serverMons[monitorIndex].values[arrayIndex];
     ss >> temp;
-    sendMessageToClient(&temp, pktHdr, mailHdr);
+    cout << "*************" << serverMons[monitorIndex].values[arrayIndex] << endl;
+    // sendMessageToClient(&temp, pktHdr, mailHdr);
     return serverMons[monitorIndex].values[arrayIndex];
 }
 
@@ -1886,6 +1887,13 @@ void Server() {
                         ss.str("");
                         ss.clear();
                         entityId = GetMonitor_server(entityIndex1, entityIndex2,pktHdr, mailHdr, id, mailbox);
+                        ss << entityId;
+                        pktHdr.to = machineId;
+                        pktHdr.from = id;
+                        mailHdr.to = 0;
+                        mailHdr.from = mailbox;
+                        //cout << "CreateCondition_server::entityId: " << entityId << endl;
+                        sendCreateEntityMessage(ss, pktHdr, mailHdr);
                     break;
                     case 'S': // set monitor
                         SetMonitor_server(entityIndex1, entityIndex2,entityIndex3,pktHdr, mailHdr, id, mailbox);
@@ -1923,7 +1931,7 @@ void Server() {
                         }
                         ss.str("");
                         ss.clear();
-                        cout << "Wait_server...i think\n";
+                        cout << "Wait_server\n";
                     break;
                     case 'S': // condition signal
                         //if (serverCount > 1){
