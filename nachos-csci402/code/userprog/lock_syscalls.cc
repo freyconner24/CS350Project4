@@ -152,6 +152,7 @@ int CreateMonitor_sys(int vaddr, int size, int arraySize) {
 int GetMonitor_sys(int monitorIndex, int arrayIndex) {
 	string receivedString = sendAndRecieveMessage("M G ", "", monitorIndex, arrayIndex, -1);
     cout << "Client::GetMonitor::receivedString: "  <<  endl;
+    cout << receivedString << endl;
     int value;
     stringstream ss;
     ss << receivedString;

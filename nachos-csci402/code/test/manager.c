@@ -28,7 +28,10 @@ void Manager() {
         }
     } while(!customersAreAllDone());
     SetMonitor(allCustomersAreDone, 0, 1);
+
+    printMoney();
     wakeUpClerks();
+
 }
 
 

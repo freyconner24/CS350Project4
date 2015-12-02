@@ -28,21 +28,21 @@ void Customer() {
     int totalLineCount;
     int moneyArray[4] = {100, 600, 1100, 1600};
     int randomIndex;
-    int ssnMon, appMon, picMon, certMon, doneMon, moneyMon, clerkLineCountMon, clerkBribeLineCountMon;
-    int testing, threadArgs;
+    int ssnMon, appMon, picMon, certMon, doneMon, moneyMon, clerkLineCountMon, clerkBribeLineCountMon, stateMon;
+    int testing, threadArgs, senatorLineCnt, clerkCash, custCash, clerkMessedUpMon;
     struct CustomerAttribute myCustAtt = initCustAttr(custNumber); /*Hung: Creating a CustomerAttribute for each new customer*/
 
-     Acquire(serverCustomerLock);
-     for(i = 0; i < customerCount; ++i) {
+    Acquire(serverCustomerLock);
+    for(i = 0; i < customerCount; ++i) {
         ssnMon = GetMonitor(SSN, i);
-         if (ssnMon == 0 ){ /*ApplicationClerk index*/
+        if (ssnMon == 0 ){ /*ApplicationClerk index*/
              custNumber = i;
              threadArgs = GetThreadArgs();
              SetMonitor(SSN, i, threadArgs + 1);
              PrintString("ThreadArgs for customer, custNumber: ", 25); PrintNum(threadArgs); PrintString(", ",2);PrintNum(custNumber);PrintNl();
              break;
          }
-     }
+    }
 
      SetMonitor(likesPicture, custNumber, 0);
      SetMonitor(applicationIsFiled, custNumber, 0);
@@ -58,30 +58,19 @@ void Customer() {
 
      if(custNumber != -1){
        PrintString("Allocation worked customer, moneyarray ", 27); PrintNum(moneyArray[randomIndex]); PrintNl();
-       /*
-       PrintNum(clerkArray[0]);PrintNl();
-       PrintNum(clerkArray[0] + clerkArray[1]);PrintNl();
-       PrintNum(clerkArray[0] + clerkArray[1] + clerkArray[2]);PrintNl();
-       PrintNum( clerkArray[0] + clerkArray[1] + clerkArray[2] + clerkArray[3]);PrintNl();
-       */
      }
     customerAttributes[custNumber] = myCustAtt;
-    while(!GetMonitor(isDone, custNumber)){    /*while(!customerAttributes[custNumber].isDone) {*/
-/*
-      PrintString("Setup clerkLineLock: ", 21); PrintNum(clerkLineLock); PrintNl();
-      PrintString("Setup ClerkSenatorLineCV: ", 26); PrintNum(clerkSenatorLineCV); PrintNl();
-      PrintString("Setup outsideLineCV: ", 21); PrintNum(outsideLineCV); PrintNl();
-      PrintString("Setup outsideLock: ", 19); PrintNum(outsideLock); PrintNl();
-      PrintString("Setup senatorLock: ", 19); PrintNum(senatorLock); PrintNl();
-      PrintString("Setup senatorLineCV: ", 21); PrintNum(senatorLineCV); PrintNl();
-*/
-    PrintString("-------Customer starting loop: myLine: ", 39); PrintNum(myLine); PrintNl();
-        if(GetMonitor(senatorLineCount, 0) > 0){
+    while(!GetMonitor(isDone, custNumber)) {     /*while(!customerAttributes[custNumber].isDone) {*/
+        PrintString("-------Customer starting loop: myLine: ", 39); PrintNum(myLine); PrintNl();
+        senatorLineCnt = GetMonitor(senatorLineCount, 0);
+        if( senatorLineCnt> 0){
 
             PrintString("Customer acquiring outside: myLine ", 35); PrintNum(myLine); PrintNl();
             Acquire(outsideLock);
             Wait(outsideLock, outsideLineCV);
             Release(outsideLock);
+            PrintString("Customer getting back inside: myLine ", 35); PrintNum(myLine); PrintNl();
+
         }
 
         PrintString("Customer acquiring clerkLineLock: myLine, clerkLineLock", 55); PrintNum(myLine); PrintNum(clerkLineLock); PrintNl();
@@ -91,7 +80,6 @@ void Customer() {
         bribe = false;
         myLine = -1;
         lineSize = 1000;
-  /*if(!customerAttributes[custNumber].applicationIsFiled && !customerAttributes[custNumber].likesPicture) {*/
         appMon = GetMonitor(applicationIsFiled, custNumber);
         picMon = GetMonitor(likesPicture, custNumber);
         certMon = GetMonitor(hasCertification, custNumber);
@@ -157,39 +145,62 @@ void Customer() {
         }
 
         PrintString("Customer_", 9); PrintNum(custNumber);PrintString("------------- myLine: ", 22); PrintNum(myLine); PrintString(", ",2); PrintNum(appMon);PrintString(", ",2); PrintNum(picMon);PrintString(", ",2); PrintNum(certMon);PrintString(", ",2); PrintNum(doneMon); PrintNl();
-
-        if(GetMonitor(clerkStates, myLine) != AVAILABLE ) { /*clerkStates[myLine] == BUSY*/
+        stateMon = GetMonitor(clerkStates, myLine);
+        if(stateMon != AVAILABLE ) { /*clerkStates[myLine] == BUSY*/
             /*I must wait in line*/
-            if(GetMonitor(money, custNumber) > 100){
+            custCash = GetMonitor(money, custNumber);
+            clerkCash = GetMonitor(clerkMoney, myLine);
+
+            if(custCash > 100){
+
+                clerkBribeLineCountMon = GetMonitor(clerkBribeLineCount, myLine);
                 PrintString("Customer_", 9); PrintNum(custNumber); PrintString(" has gotten in bribe line for ", 30);
-                PrintString(clerkTypes[myLine], clerkTypesLengths[myLine]); PrintString("_", 1); PrintNum(myLine); PrintNl();
+                PrintString(clerkTypes[myLine], clerkTypesLengths[myLine]); PrintString("_", 1); PrintNum(myLine); PrintString(" of length ", 11); PrintNum(clerkBribeLineCountMon); PrintNl();
                 /* CL: takes bribe money*/
-                SetMonitor(money, custNumber, GetMonitor(money, custNumber) - 500);
-                SetMonitor(clerkMoney, myLine, GetMonitor(clerkMoney, myLine) + 500);
-                SetMonitor(clerkBribeLineCount, myLine, (GetMonitor(clerkBribeLineCount, myLine)) + 1);
+                custCash = custCash - 5;
+                SetMonitor(money, custNumber, custCash);
+                clerkCash = clerkCash + 5;
+                SetMonitor(clerkMoney, myLine, clerkCash);
+                clerkBribeLineCountMon = clerkBribeLineCountMon + 1;
+                SetMonitor(clerkBribeLineCount, myLine, clerkBribeLineCountMon);
                 bribe = true;
+
+                /*testing*/
+                custCash = GetMonitor(money, custNumber);
+                PrintString("Customer_", 9); PrintNum(custNumber); PrintString(" has ", 5); PrintNum(custCash); PrintNl();
+                clerkCash = GetMonitor(clerkMoney, myLine);
+                PrintString(clerkTypes[myLine], clerkTypesLengths[myLine]); PrintString("_", 1); PrintNum(myLine); PrintString(" has ", 11); PrintNum(clerkCash); PrintNl();
+
                 Wait(clerkLineLock, clerkBribeLineCV[myLine]);
             } else {
+                clerkLineCountMon = GetMonitor(clerkLineCount, myLine);
                 PrintString("Customer_", 9); PrintNum(custNumber); PrintString(" has gotten in regular line for ", 32);
-                PrintString(clerkTypes[myLine], clerkTypesLengths[myLine]); PrintString("_", 1); PrintNum(myLine); PrintNl();
-                SetMonitor(clerkLineCount, myLine, GetMonitor(clerkLineCount, myLine) + 1);
+                PrintString(clerkTypes[myLine], clerkTypesLengths[myLine]); PrintString("_", 1); PrintNum(myLine); PrintString(" of length ", 11); PrintNum(clerkLineCountMon); PrintNl();
+                clerkLineCountMon = clerkLineCountMon + 1;
+                SetMonitor(clerkLineCount, myLine, clerkLineCountMon);
                 Wait(clerkLineLock, clerkLineCV[myLine]);
             }
-
+            /*redundant*/
             totalLineCount = 0;
             for(i = 0; i < clerkCount; ++i) {
+
                 totalLineCount = totalLineCount + GetMonitor(clerkBribeLineCount, i) + GetMonitor(clerkLineCount, i);
             }
 
             if(bribe) {
-                SetMonitor(clerkBribeLineCount, myLine, GetMonitor(clerkBribeLineCount, myLine) - 1);
+                clerkBribeLineCountMon = GetMonitor(clerkBribeLineCount, myLine);
+                clerkBribeLineCountMon = clerkBribeLineCountMon -1;
+                SetMonitor(clerkBribeLineCount, myLine, clerkBribeLineCountMon);
             } else {
-                SetMonitor(clerkLineCount, myLine, GetMonitor(clerkLineCount, myLine) - 1);
+                clerkLineCountMon = GetMonitor(clerkLineCount, myLine);
+                clerkLineCountMon = clerkLineCountMon -1;
+                SetMonitor(clerkLineCount, myLine, clerkLineCountMon);
             }
 
         } else {
+          stateMon = GetMonitor(clerkStates, myLine);
           PrintString("Customer_", 9); PrintNum(custNumber); PrintString(" is first in line for clerk.\n", 30);
-            PrintNum(GetMonitor(clerkStates, myLine));PrintNl();
+            PrintNum(stateMon);PrintNl();
             SetMonitor(clerkStates, myLine, BUSY);
         }
         PrintString("Customer_", 9); PrintNum(custNumber); PrintString(" is trying to release clerkLineLock\n", 36);
@@ -209,9 +220,9 @@ void Customer() {
        /*Read my data*/
         Signal(clerkLock[myLine], clerkCV[myLine]);
         Release(clerkLock[myLine]);
-
-        if(GetMonitor(clerkMessedUp, custNumber)) {
-            PrintString("Clerk messed up.  Customer is going to the back of the line.\n", 61);
+        clerkMessedUpMon = GetMonitor(clerkMessedUp, custNumber);
+        if(clerkMessedUpMon == 1) {
+            PrintString("Customer_", 9); PrintNum(custNumber);PrintString(": clerk messed up.  Customer is going to the back of the line.: ", 61); PrintNum(clerkMessedUpMon);PrintNl();
             yieldTime = Rand(900, 100);
             for(i = 0; i < yieldTime; ++i) {
                 Yield();
@@ -244,16 +255,13 @@ int my_strcmp(char s1[], const char s2[], int len) {
         if(s1[i] == '\0') {
             return false;
         }
-
         if(s2[i] == '\0') {
             return false;
         }
-
         if(s1[i] != s2[i]) {
             return false;
         }
     }
-
     return true;
 }
 

@@ -2,6 +2,7 @@
 
 int mon1 = 0;
 int mon2 = 1;
+int mon3 = 1;
 int value1 = 0;
 int value2 = 1;
 int lock1 = 0;
@@ -12,9 +13,16 @@ int i = 0;
 
 
 int main(){
+	mon1 = CreateMonitor("Monitor1", 8, 5);
+	mon2 = CreateMonitor("Monitor2", 8, 10);
+	mon3 = CreateMonitor("Monitor3", 8, 10);
+	lock1 = CreateLock("Lock1", 5, 0);
+	lock2 = CreateLock("Lock2", 5, 0);
+	cond1 = CreateCondition("Cond1", 5, 0);
+	cond2 = CreateCondition("Cond2", 5, 0);
 	PrintString("Setting monitors\n", 17);
   Acquire(lock1);
-	SetMonitor(mon1, 0, 9);
+	SetMonitor(mon1, 0, 190);
 	for (i = 0; i < 30000; ++i){
 		Yield();
 	}

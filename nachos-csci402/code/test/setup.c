@@ -122,14 +122,14 @@ void createClerkLocksConditionsMonitors() {
     int clerkType = 0, j = 0;
     int clerkNumber = 0, clerkTypeLength;
     /*Conditions and locks*/
-    serverClerkLock = CreateLock("SeClL", 5, 0);
-    serverCustomerLock = CreateLock("ServerCustomerLock", 18, 0);
-    clerkSenatorLineCV = CreateCondition("ClerkSenatorLineCV", 19, 0);
-    clerkLineLock = CreateLock("ClerkLineLock", 14, 0);
-    outsideLineCV = CreateCondition("OutsideLineCV", 14, 0);
-    outsideLock = CreateLock("OutsideLock", 12, 0);
-    senatorLock = CreateLock("SenatorLock", 12, 0);
-    senatorLineCV = CreateCondition("SenatorLineCV", 13, 0);
+    serverClerkLock = CreateLock("SeClLo", 5, 0);
+    serverCustomerLock = CreateLock("SeCuLo", 6, 0);
+    clerkSenatorLineCV = CreateCondition("ClSeLiCV", 8, 0);
+    clerkLineLock = CreateLock("ClLiLo", 6, 0);
+    outsideLineCV = CreateCondition("OuLiCV", 6, 0);
+    outsideLock = CreateLock("OuLo", 4, 0);
+    senatorLock = CreateLock("SeLo", 4, 0);
+    senatorLineCV = CreateCondition("SeLiCV", 6, 0);
 
   /*  PrintString("Setup clerkLineLock: ", 21); PrintNum(clerkLineLock); PrintNl();
     PrintString("Setup ClerkSenatorLineCV: ", 26); PrintNum(clerkSenatorLineCV); PrintNl();
@@ -140,18 +140,18 @@ void createClerkLocksConditionsMonitors() {
 */
 /*Monitor variables*/
     /*Single monitors*/
-    allCustomersAreDone = CreateMonitor("AllCustomersAreDone",19, 1);
-    senatorLineCount = CreateMonitor("SenatorLineCount",16, 1);
-    senatorDone = CreateMonitor("SenatorDone",11, 1);
-    outsideLineCount = CreateMonitor("OutsideLineCount",16, 1);
+    allCustomersAreDone = CreateMonitor("AllCuRDone",10, 1);
+    senatorLineCount = CreateMonitor("SeLiCo",6, 1);
+    senatorDone = CreateMonitor("SenDone",7, 1);
+    outsideLineCount = CreateMonitor("OuLiCnt",7, 1);
 
 
     /*Monitors of clerkCount size*/
-    clerkLineCount = CreateMonitor("ClerkLineCount",14, clerkCount);
-    clerkBribeLineCount = CreateMonitor("clerkBribeLineCount",19, clerkCount);
-    clerkStates = CreateMonitor("clerkStates",11, clerkCount);
+    clerkLineCount = CreateMonitor("CleLiCnt",8, clerkCount);
+    clerkBribeLineCount = CreateMonitor("ClBrLiCnt",9, clerkCount);
+    clerkStates = CreateMonitor("clerkState",10, clerkCount);
     clerkMoney = CreateMonitor("clerkMoney",10, clerkCount);
-    customerData = CreateMonitor("customerData",12, clerkCount);
+    customerData = CreateMonitor("customData",10, clerkCount);
     /*clerkTypesLengths = CreateMonitor("clerkTypesLengths",17, clerkCount);*/
 
     clerkOwner = CreateMonitor("ClerkOwner", 10, clerkCount);
@@ -162,11 +162,11 @@ void createClerkLocksConditionsMonitors() {
 /*Monitor for customerAttributes*/
     PrintString("Before custAttr: ", 17); PrintNum(customerCount + senatorCount);
     SSN = CreateMonitor("SSNMon", 6, customerCount + senatorCount);
-    likesPicture = CreateMonitor("likesPictureMon", 15, customerCount + senatorCount);
-    applicationIsFiled = CreateMonitor("applicationIsFiledMon", 21, customerCount + senatorCount);
-    hasCertification = CreateMonitor("hasCertificationMon", 19, customerCount + senatorCount);
+    likesPicture = CreateMonitor("likePicMon", 10, customerCount + senatorCount);
+    applicationIsFiled = CreateMonitor("appFileMon", 10, customerCount + senatorCount);
+    hasCertification = CreateMonitor("hasCertMon", 10, customerCount + senatorCount);
     isDone = CreateMonitor("isDoneMon", 9, customerCount + senatorCount);
-    clerkMessedUp = CreateMonitor("clerkMessedUpMon", 16, customerCount + senatorCount);
+    clerkMessedUp = CreateMonitor("MessUpMon", 9, customerCount + senatorCount);
     money = CreateMonitor("moneyMon", 8, customerCount + senatorCount);
     for(i = 0; i < clerkCount; ++i) {
         if(i / 10 == 0) {
@@ -174,71 +174,71 @@ void createClerkLocksConditionsMonitors() {
         } else {
             cpyLen = 2;
         }
-        bzero(name, 70);
-        bzero(intPart, 6);
+        clerArray(name, 70);
+        clerArray(intPart, 6);
         itoa(i, intPart);
-        strcpy(name, "ClerkLock_");
+        my_strcpy2(name, "ClerkLock_");
         strcat(name, intPart);
 
-        clerkLock[i] = CreateLock(name, strlen(name), i);
+        clerkLock[i] = CreateLock(name, my_strlen(name), i);
         /*PrintString("Setup clerkLock[i]: ", 20); PrintNum(clerkLock[i]); PrintNl();*/
 
-        bzero(name, 70);
-        bzero(intPart, 6);
+        clerArray(name, 70);
+        clerArray(intPart, 6);
         itoa(i, intPart);
-        strcpy(name, "ClerkCV_");
+        my_strcpy2(name, "CleCV_");
         strcat(name, intPart);
 
-        clerkCV[i] = CreateCondition(name, strlen(name), i);
+        clerkCV[i] = CreateCondition(name, my_strlen(name), i);
         /*PrintString("Setup clerkCV[i]: ", 18); PrintNum(clerkCV[i]); PrintNl();*/
 
-        bzero(name, 70);
-        bzero(intPart, 6);
+        clerArray(name, 70);
+        clerArray(intPart, 6);
         itoa(i, intPart);
-        strcpy(name, "ClerkLineCV_");
+        my_strcpy2(name, "ClLiCV_");
         strcat(name, intPart);
 
-        clerkLineCV[i] = CreateCondition(name, strlen(name), i);
+        clerkLineCV[i] = CreateCondition(name, my_strlen(name), i);
 
-        bzero(name, 70);
-        bzero(intPart, 6);
+        clerArray(name, 70);
+        clerArray(intPart, 6);
         itoa(i, intPart);
-        strcpy(name, "ClerkBribeLineCV_");
+        my_strcpy2(name, "CBrLCV_");
         strcat(name, intPart);
 
-        clerkBribeLineCV[i] = CreateCondition(name, strlen(name), i);
+        clerkBribeLineCV[i] = CreateCondition(name, my_strlen(name), i);
 
-        bzero(name, 70);
-        bzero(intPart, 6);
+        clerArray(name, 70);
+        clerArray(intPart, 6);
         itoa(i, intPart);
-        strcpy(name, "BreakLock_");
+        my_strcpy2(name, "BrkLo_");
         strcat(name, intPart);
 
-        breakLock[i] = CreateLock(name, strlen(name), i);
+        breakLock[i] = CreateLock(name, my_strlen(name), i);
 
-        bzero(name, 70);
-        bzero(intPart, 6);
+        clerArray(name, 70);
+        clerArray(intPart, 6);
         itoa(i, intPart);
-        strcpy(name, "BreakCV_");
+        my_strcpy2(name, "BrkCV_");
         strcat(name, intPart);
 
-        breakCV[i] = CreateCondition(name, strlen(name), i);
+        breakCV[i] = CreateCondition(name, my_strlen(name), i);
 
-        bzero(name, 70);
-        bzero(intPart, 6);
+        clerArray(name, 70);
+        clerArray(intPart, 6);
         itoa(i, intPart);
-        strcpy(name, "ClerkSenatorCV_");
+        my_strcpy2(name, "ClSeCV_");
         strcat(name, intPart);
 
-        clerkSenatorCV[i] = CreateCondition(name, strlen(name), i);
+        clerkSenatorCV[i] = CreateCondition(name, my_strlen(name), i);
 
-        bzero(name, 70);
-        bzero(intPart, 6);
+        clerArray(name, 70);
+        clerArray(intPart, 6);
         itoa(i, intPart);
-        strcpy(name, "ClerkSenatorCVLock");
+        my_strcpy2(name, "ClSeCVLo");
         strcat(name, intPart);
 
-        clerkSenatorCVLock[i] = CreateLock(name, strlen(name), i);
+        clerkSenatorCVLock[i] = CreateLock(name, my_strlen(name), i);
 
 
 
@@ -296,10 +296,10 @@ void PassportOfficeTests() {
 
     if(testChosen == 1) {
         PrintString("Starting Test 1\n", 16); /*Customers always take the shortest line, but no 2 customers ever choose the same shortest line at the same time*/
-        customerCount = 7;
-        clerkCount = 5;
-        senatorCount = 1;
-        clerkArray[0] = 1; clerkArray[1] = 1; clerkArray[2] = 1; clerkArray[3] = 2; /*TODO: replace countofeachclerktype with clerkarray with other tests*/
+        customerCount = 3;
+        clerkCount = 4;
+        senatorCount = 3;
+        clerkArray[0] = 1; clerkArray[1] = 1; clerkArray[2] = 1; clerkArray[3] = 1; /*TODO: replace countofeachclerktype with clerkarray with other tests*/
 
         createTestVariables();
     } else if(testChosen == 2) {
@@ -315,7 +315,7 @@ void PassportOfficeTests() {
                                      The Cashier does not start on another customer until they know that the last Customer has left their area*/
         customerCount = 5;
         clerkCount = 4;
-        senatorCount = 0;
+        senatorCount = 3;
         countOfEachClerkType[0] = 1; countOfEachClerkType[1] = 1; countOfEachClerkType[2] = 1; countOfEachClerkType[3] = 1;
 
         createTestVariables();
@@ -404,16 +404,15 @@ void initializeEverything(){
   }
 }
 
-int strlen(char* str){
-
+int my_strlen(char* str){
         int i = 0;
-        while(str[i] != '\0')
-                i++;
-
+        while(str[i] != '\0'){
+          i++;
+        }
         return i;
 }
 
-void strcpy(char dest[], char source[]) {
+void my_strcpy2(char dest[], char source[]) {
         int i = 0;
         while (source[i] != '\0') {
                 dest[i] = source[i];
@@ -424,7 +423,7 @@ void strcpy(char dest[], char source[]) {
 
 void strcat(char dest[], char source[]) {
         int i = 0;
-        int len = strlen(dest);
+        int len = my_strlen(dest);
         while (source[i] != '\0') {
                 dest[len + i] = source[i];
                 i++;
@@ -432,13 +431,7 @@ void strcat(char dest[], char source[]) {
         dest[len + i] = '\0';
 }
 
-void bzero(char string[], int length) {
-        int i = 0;
-        while (i < length) {
-                string[i++] = '\0';
-        }
-}
-
+//Online implementation
 void itoa(int n, char s[])
 {
      int i, sign;
@@ -461,13 +454,19 @@ void reverse(char s[])
      int i, j;
      char c;
 
-     for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+     for (i = 0, j = my_strlen(s)-1; i<j; i++, j--) {
          c = s[i];
          s[i] = s[j];
          s[j] = c;
      }
  }
 
+ void clerArray(char string[], int length) {
+         int i = 0;
+         while (i < length) {
+                 string[i++] = '\0';
+         }
+ }
 
 int setup() {
     PassportOfficeTests();

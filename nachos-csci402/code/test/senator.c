@@ -20,19 +20,29 @@ struct CustomerAttribute initCustAttr(int ssn) {
 
 void Senator(){
     int custNumber = -1;
-
     struct CustomerAttribute myCustAtt = initCustAttr(custNumber);
-    int i, myLine, theLineCount;
+    int i, myLine, theLineCount, randomIndex;
+    int ssnMon, appMon, picMon, certMon, doneMon, moneyMon, clerkLineCountMon;
+    int testing, threadArgs, senatorLineCnt, clerkCash, custCash, clerkMessedUpMon;
+
     customerAttributes[custNumber] = myCustAtt;
 
     Acquire(serverCustomerLock);
     for(i = customerCount; i < customerCount + senatorCount; ++i) {
         if (GetMonitor(SSN, i) == 0 ){ /*ApplicationClerk index*/
             custNumber = i;
-            SetMonitor(SSN, i, GetThreadArgs());
+            threadArgs = GetThreadArgs();
+            SetMonitor(SSN, i, threadArgs + 1);
             break;
         }
     }
+    SetMonitor(likesPicture, custNumber, 0);
+    SetMonitor(applicationIsFiled, custNumber, 0);
+    SetMonitor(hasCertification, custNumber, 0);
+    SetMonitor(isDone, custNumber , 0);
+    SetMonitor(clerkMessedUp, custNumber, 0);
+    randomIndex = Rand(4, 0); /*0 to 3*/
+    SetMonitor(money, custNumber, 100);
     Release(serverCustomerLock);
     if(custNumber == -1){
       PrintString("Allocation didn't work\n", 24);
@@ -43,8 +53,10 @@ void Senator(){
 
     Acquire(senatorLock);
     theLineCount = GetMonitor(senatorLineCount, 0);
+
     if(theLineCount > 0){
-        SetMonitor(senatorLineCount, 0, theLineCount++);
+        theLineCount = theLineCount + 1;
+        SetMonitor(senatorLineCount, 0, theLineCount);
         Wait(senatorLock, senatorLineCV);
         SetMonitor(senatorDone, 0, 1); /*Set senatorDone to true*/
         for(i = 0; i < clerkCount; i++){
@@ -68,8 +80,8 @@ void Senator(){
         for(i = 0; i < clerkCount; i++){
             Acquire(clerkSenatorCVLock[i]);
         }
-
-        SetMonitor(senatorLineCount, 0, theLineCount + 1);
+        theLineCount = theLineCount + 1;
+        SetMonitor(senatorLineCount, 0, theLineCount);
         Release(senatorLock);
         SetMonitor(senatorDone, 0, 0); /*Set senatorDone to false*/
 
@@ -82,32 +94,37 @@ void Senator(){
 
     myLine = 0;
     while(!GetMonitor(isDone, custNumber)) {
+      appMon = GetMonitor(applicationIsFiled, custNumber);
+      picMon = GetMonitor(likesPicture, custNumber);
+      certMon = GetMonitor(hasCertification, custNumber);
+      doneMon = GetMonitor(isDone, custNumber);
+
         for(i = 0; i < clerkCount; i++) {
-            if(!GetMonitor(applicationIsFiled, custNumber) &&
-                /*customerAttributes[custNumber].likesPicture &&*/
-                !GetMonitor(hasCertification, custNumber) &&
-                !GetMonitor(isDone, custNumber) &&
+          if(
+              appMon == 0 &&
+              certMon == 0 &&
+              doneMon == 0 &&
                 my_strcmp(clerkTypes[i], "ApplicationClerk", clerkTypesLengths[i])) {
                 PrintString("    ", 4); PrintString("Senator_", 8); PrintNum(custNumber); PrintString("::: ApplicationClerk chosen\n", 28);
                 myLine = i;
             } else if(/*customerAttributes[custNumber].applicationIsFiled &&*/
-                      !GetMonitor(likesPicture, custNumber) &&
-                      !GetMonitor(hasCertification, custNumber) &&
-                      !GetMonitor(isDone, custNumber) &&
+                      picMon == 0 &&
+                      certMon == 0 &&
+                      doneMon == 0 &&
                       my_strcmp(clerkTypes[i], "PictureClerk", clerkTypesLengths[i])) {
                 PrintString("    ", 4); PrintString("Senator_", 8); PrintNum(custNumber); PrintString("::: PictureClerk chosen\n", 24);
                 myLine = i;
-            } else if(GetMonitor(applicationIsFiled, custNumber) &&
-                      GetMonitor(likesPicture, custNumber) &&
-                      !GetMonitor(hasCertification, custNumber) &&
-                      !GetMonitor(isDone, custNumber) &&
+            } else if(appMon == 1 &&
+                      picMon == 1 &&
+                      certMon == 0 &&
+                      doneMon == 0 &&
                       my_strcmp(clerkTypes[i], "PassportClerk", clerkTypesLengths[i])) {
                 PrintString("    ", 4); PrintString("Senator_", 8); PrintNum(custNumber); PrintString("::: PassportClerk chosen\n", 25);
                 myLine = i;
-            } else if(GetMonitor(applicationIsFiled, custNumber) &&
-                      GetMonitor(likesPicture, custNumber) &&
-                      GetMonitor(hasCertification, custNumber) &&
-                      !GetMonitor(isDone, custNumber) &&
+            } else if(appMon == 1 &&
+                      picMon == 1 &&
+                     certMon == 1 &&
+                      doneMon == 0 &&
                       my_strcmp(clerkTypes[i], "Cashier", clerkTypesLengths[i])) {
                 PrintString("    ", 4); PrintString("Senator_", 8); PrintNum(custNumber); PrintString("::: Cashier chosen\n", 19);
                 myLine = i;
@@ -130,8 +147,10 @@ void Senator(){
     }
 
     Acquire(senatorLock);
-    SetMonitor(senatorLineCount, 0, GetMonitor(senatorLineCount, 0) - 1);
-    if(GetMonitor(senatorLineCount, 0) == 0){
+    senatorLineCnt =  GetMonitor(senatorLineCount, 0);
+    senatorLineCnt = senatorLineCnt - 1;
+    SetMonitor(senatorLineCount, 0,  senatorLineCnt);
+    if(senatorLineCnt == 0){
         for(i = 0 ; i < clerkCount ; i++){
             /*Free up clerks that worked with me*/
             Signal(clerkLock[i],clerkCV[i]);
