@@ -296,10 +296,10 @@ void PassportOfficeTests() {
 
     if(testChosen == 1) {
         PrintString("Starting Test 1\n", 16); /*Customers always take the shortest line, but no 2 customers ever choose the same shortest line at the same time*/
-        customerCount = 3;
-        clerkCount = 4;
-        senatorCount = 3;
-        clerkArray[0] = 1; clerkArray[1] = 1; clerkArray[2] = 1; clerkArray[3] = 1; /*TODO: replace countofeachclerktype with clerkarray with other tests*/
+        customerCount = 20;
+        clerkCount = 6;
+        senatorCount = 0;
+        clerkArray[0] = 1; clerkArray[1] = 2; clerkArray[2] = 1; clerkArray[3] = 2; /*TODO: replace countofeachclerktype with clerkarray with other tests*/
 
         createTestVariables();
     } else if(testChosen == 2) {
@@ -431,7 +431,7 @@ void strcat(char dest[], char source[]) {
         dest[len + i] = '\0';
 }
 
-//Online implementation
+/*Online implementation*/
 void itoa(int n, char s[])
 {
      int i, sign;

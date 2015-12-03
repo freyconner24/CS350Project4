@@ -69,7 +69,7 @@ void Senator(){
         }
         for(i = 0; i < clerkCount; i++){
 
-            PrintString("Waiting for clerk ", 18); PrintNum(i); PrintNl();
+            PrintString("Senator Waiting for clerk ", 18); PrintNum(i); PrintNl();
             Signal(clerkSenatorCVLock[i], clerkSenatorCV[i]);
 
             Wait(clerkSenatorCVLock[i], clerkSenatorCV[i]);
