@@ -1,41 +1,26 @@
 #include "syscall.h"
 #include "setup.h"
 
-struct CustomerAttribute initCustAttr(int ssn) {
-    int moneyArray[4] = {100, 600, 1100, 1600};
-    int randomIndex = Rand(4, 0); /*0 to 3*/
-
-    struct CustomerAttribute ca;
-    ca.SSN = ssn;
-    ca.applicationIsFiled = false;
-    ca.likesPicture = false;
-    ca.hasCertification = false;
-    ca.isDone = false;
-    ca.clerkMessedUp = false;
-
-    ca.money = moneyArray[randomIndex];
-    return ca;
-}
 
 
 void Senator(){
     int custNumber = -1;
-    struct CustomerAttribute myCustAtt = initCustAttr(custNumber);
     int i, myLine, theLineCount, randomIndex;
     int ssnMon, appMon, picMon, certMon, doneMon, moneyMon, clerkLineCountMon;
     int testing, threadArgs, senatorLineCnt, clerkCash, custCash, clerkMessedUpMon;
 
-    customerAttributes[custNumber] = myCustAtt;
-
+    /*Function to help the senator find a unique identifier from the server*/
     Acquire(serverCustomerLock);
     for(i = customerCount; i < customerCount + senatorCount; ++i) {
-        if (GetMonitor(SSN, i) == 0 ){ /*ApplicationClerk index*/
+        if (GetMonitor(SSN, i) == 0 ){
             custNumber = i;
             threadArgs = GetThreadArgs();
             SetMonitor(SSN, i, threadArgs + 1);
             break;
         }
     }
+
+    /*Initialize senator monitors for this customer*/
     SetMonitor(likesPicture, custNumber, 0);
     SetMonitor(applicationIsFiled, custNumber, 0);
     SetMonitor(hasCertification, custNumber, 0);
@@ -44,13 +29,6 @@ void Senator(){
     randomIndex = Rand(4, 0); /*0 to 3*/
     SetMonitor(money, custNumber, 100);
     Release(serverCustomerLock);
-    if(custNumber == -1){
-      PrintString("Allocation didn't work\n", 24);
-    }
-    if(custNumber != -1){
-      PrintString("Allocation worked senator ", 27); PrintNum(custNumber); PrintNl();
-    }
-
     Acquire(senatorLock);
     theLineCount = GetMonitor(senatorLineCount, 0);
 
@@ -68,7 +46,6 @@ void Senator(){
             Release(clerkLock[i]);
         }
         for(i = 0; i < clerkCount; i++){
-
             PrintString("Senator Waiting for clerk ", 18); PrintNum(i); PrintNl();
             Signal(clerkSenatorCVLock[i], clerkSenatorCV[i]);
 
@@ -179,10 +156,7 @@ void Senator(){
 
 }
 
-/*Senator functions*/
-
-
-
+/*Senator helper function to compary char arrays*/
 int my_strcmp(char s1[], const char s2[], int len) {
     int i = 0;
     for(i = 0; i < len; ++i) {
@@ -204,8 +178,7 @@ int my_strcmp(char s1[], const char s2[], int len) {
 
 
 int main(){
-
-    setup();
+  setup();
   Senator();
   Exit(0);
 }

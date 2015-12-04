@@ -9,15 +9,12 @@ int main() {
     int i;
     int clerkType = 0, j = 0;
     int clerkNumber = 0, clerkTypeLength;
-    PrintString("Setting up locks, conditions and monitor variables: ", 52); PrintNum(i); PrintNl();
+    PrintString("Setting up locks, conditions and monitor variables...", 53); PrintNum(i); PrintNl();
     setup();
-    PrintString("+++++Senator instantiation", 24); PrintNl();
-
-
+    PrintString("Senator instantiation...", 24); PrintNl();
+    /*Function to instantiate up to 8 senators*/
     for(i = 0; i < senatorCount; i++){
-      PrintString("+++++Senator Created\n", 21); PrintNum(i + 50); PrintNl();
+      PrintString("Senator created - ", 18); PrintNum(i + customerCount); PrintNl();
         Exec("../test/senator");
     }
-
-    /*Exit(0);*/
 }

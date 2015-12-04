@@ -1,3 +1,7 @@
+
+#ifndef SETUP_H
+#define SETUP_H
+
 #include "syscall.h"
 
 
@@ -7,14 +11,6 @@
 #define SENATOR_NUMBER 10
 #define false 0
 #define true 1
-/* Unused defines
-#define APPLICATION_CLERK 1
-#define PICTURE_CLERK 1
-#define PASSPORT_CLERK 1
-#define CASHIER_CLERK 2
-#define CUSTOMERS_NUM 20
-#define SENATOR_NUM 1
-*/
 /*Setup variables*/
 extern int testChosen; /* CL: indicate test number (1-7) or full program (0)*/
 extern int clerkCount;  /* CL: number of total clerks of the 4 types that can be modified*/
@@ -42,6 +38,9 @@ extern int clerkSenatorCVLock[CLERK_NUMBER];
 extern int serverClerkLock;
 extern int clerkOwner;
 extern int serverCustomerLock;
+extern int serverCustomInitLock;
+/*Customer number initializion*/
+extern int customerInitMon;
 /*Monitors of size 1*/
 extern int allCustomersAreDone;
 extern int senatorLineCount; /* CL: number of senators in a line at any given time*/
@@ -85,3 +84,5 @@ typedef void (*VoidFunctionPtr)(int arg);
 extern int setup();
 extern void createClerkLocksConditionsMonitors();
 extern void initializeEverything();
+
+#endif

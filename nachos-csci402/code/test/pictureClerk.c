@@ -4,7 +4,7 @@
 void PictureClerk() {
 
     int myLine = -1;
-    int i = 0, numYields, probability, isCustomer = 1;
+    int i = 0, numYields, probability, isCustomer = 1, pictureLikeMon;
     char personName[50];
 
     Acquire(serverClerkLock);
@@ -16,12 +16,6 @@ void PictureClerk() {
         }
     }
     Release(serverClerkLock);
-    if(myLine == -1){
-      PrintString("Allocation didn't work\n", 24);
-    }
-    if(myLine != -1){
-      PrintString("PictureClerk_Allocation worked ", 31); PrintNum(myLine); PrintNl();
-    }
 
     while(GetMonitor(allCustomersAreDone, 0) == 0) {
         int custNumber = chooseCustomerFromLine(myLine, "PictureClerk_", 13);
@@ -39,8 +33,8 @@ void PictureClerk() {
         recievedSSNString(isCustomer, "PictureClerk_", 13, myLine, custNumber);
 
         numYields = Rand(80, 20);
-
-        while(!GetMonitor(likesPicture, custNumber)) {
+        pictureLikeMon = GetMonitor(likesPicture, custNumber);
+        while(pictureLikeMon == 0) {
             PrintString("PictureClerk_", 13); PrintNum(myLine); PrintString(" has taken a picture of ", 24);
             PrintCust(isCustomer); PrintNum(custNumber); PrintNl();
 
@@ -62,6 +56,8 @@ void PictureClerk() {
                 PrintString("PictureClerk_", 13); PrintNum(myLine); PrintString(" has been told that ", 20);
                 PrintCust(isCustomer); PrintNum(custNumber); PrintString(" does not like their picture\n", 29);
             }
+
+            pictureLikeMon = GetMonitor(likesPicture, custNumber);
         }
         clerkSignalsNextCustomer(myLine);
     }
@@ -73,7 +69,7 @@ void PictureClerk() {
 
 int chooseCustomerFromLine(int myLine, char* clerkName, int clerkNameLength) {
     int testFlag = false;
-    int clerkBribeLineCnt, clerkLineCnt, senatorLineCnt, senatorDoneMon, clerkState;
+    int clerkBribeLineCnt, clerkLineCnt, senatorLineCnt, senatorDoneMon, clerkState, allCustDone;
     do {
         testFlag = false;
         /* TODO: -1 used to be NULL.  Hung needs to figure this out */
@@ -128,12 +124,14 @@ int chooseCustomerFromLine(int myLine, char* clerkName, int clerkNameLength) {
                 PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" is waking up from a break now.\n", 33); PrintNl();/*HUNG LINE*/
                 SetMonitor(clerkStates, myLine, AVAILABLE);
                 Release(breakLock[myLine]);
-                /*if(allCustomersAreDone) {
+                allCustDone = GetMonitor(allCustomersAreDone, 0);
+                if(allCustDone == 1) {
                     Exit(0);
-                }*/
+                }
             }
         }
-    } while(GetMonitor(clerkStates, myLine) != BUSY);
+        clerkState = GetMonitor(clerkStates, myLine) ;
+    } while(clerkState!= BUSY);
 
     PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" Acquring clerkLock\n", 21);/*HUNG LINE*/
 

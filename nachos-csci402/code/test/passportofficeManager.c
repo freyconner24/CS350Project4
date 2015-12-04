@@ -9,12 +9,7 @@ int main() {
     int i;
     int clerkType = 0, j = 0;
     int clerkNumber = 0, clerkTypeLength;
-    PrintString("Setting up locks, conditions and monitor variables: ", 52); PrintNum(i); PrintNl();
+    PrintString("Setting up locks, conditions and monitor variables...", 53); PrintNum(i); PrintNl();
     setup();
-
     Exec("../test/manager");
-
-
-
-    /*Exit(0);*/
 }

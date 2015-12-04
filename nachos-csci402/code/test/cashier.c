@@ -5,7 +5,7 @@
 
 void Cashier() {
     int myLine = -1;
-    int numYields, clerkMessedUp, i;
+    int numYields, clerkMessedUp, i, certMon, clerkMon;
     char personName[50], isCustomer = 1;
 
     Acquire(serverClerkLock);
@@ -17,12 +17,7 @@ void Cashier() {
         }
     }
     Release(serverClerkLock);
-    if(myLine == -1){
-      PrintString("Allocation didn't work\n", 24);
-    }
-    if(myLine != -1){
-      PrintString("Cashier_Allocation worked ", 26); PrintNum(myLine); PrintNl();
-    }
+
 
     while(GetMonitor(allCustomersAreDone, 0) == 0) {
         int custNumber = chooseCustomerFromLine(myLine, "Cashier_", 8);
@@ -36,16 +31,17 @@ void Cashier() {
         givenSSNString(isCustomer, custNumber, "Cashier_", 8, myLine);
         Yield();
         recievedSSNString(isCustomer, "Cashier_", 8, myLine, custNumber);
-
-        if(GetMonitor(hasCertification, custNumber)) {
+        certMon = GetMonitor(hasCertification, custNumber);
+        if(certMon) {
             PrintString("Cashier_", 8); PrintNum(myLine); PrintString(" has verified that ", 19);
             PrintCust(isCustomer); PrintNum(custNumber); PrintString("has been certified by a PassportClerk\n", 38);
             SetMonitor(money, custNumber, GetMonitor(money, custNumber) - 100);
             PrintString("Cashier_", 8); PrintNum(myLine); PrintString(" has received the $100 from ", 28);
             PrintCust(isCustomer); PrintNum(custNumber); PrintString("after certification\n", 20);
             PrintCust(isCustomer); PrintNum(custNumber); PrintString(" has given ", 11); PrintString("Cashier_", 8); PrintNum(myLine); PrintString(" $100\n", 6);
-
-            SetMonitor(clerkMoney, myLine, GetMonitor(clerkMoney, myLine) + 100);
+            clerkMon = GetMonitor(clerkMoney, myLine) ;
+            clerkMon = clerkMon + 1;
+            SetMonitor(clerkMoney, myLine, clerkMon);
             SetMonitor(clerkStates, myLine, BUSY);
             numYields = Rand(80, 20);
             /* CL: yields after processing money*/
@@ -76,10 +72,9 @@ void Cashier() {
 }
 
 /*Clerk functions*/
-
 int chooseCustomerFromLine(int myLine, char* clerkName, int clerkNameLength) {
     int testFlag = false;
-    int clerkBribeLineCnt, clerkLineCnt, senatorLineCnt, senatorDoneMon, clerkState;
+    int clerkBribeLineCnt, clerkLineCnt, senatorLineCnt, senatorDoneMon, clerkState, allCustDone;
     do {
         testFlag = false;
         /* TODO: -1 used to be NULL.  Hung needs to figure this out */
@@ -92,17 +87,18 @@ int chooseCustomerFromLine(int myLine, char* clerkName, int clerkNameLength) {
             PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" clerkSenatorCVLock acquired\n", 30);/*HUNG LINE*/
             Signal(clerkSenatorCVLock[myLine], clerkSenatorCV[myLine]);
             PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" clerkSenatorCVLock signal\n", 29);/*HUNG LINE*/
-
             /*Wait for senator here, if they need me*/
             Wait( clerkSenatorCVLock[myLine], clerkSenatorCV[myLine]);
             PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" clerkSenatorCVLock waited e\n", 30);/*HUNG LINE*/
 
             if(senatorLineCnt == 0){
               Acquire(clerkLineLock);
+              PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" was unused by senator\n", 23);/*HUNG LINE*/
               SetMonitor(clerkStates, myLine, AVAILABLE);
               Release(clerkSenatorCVLock[myLine]);
             }else if(senatorLineCnt > 0 && senatorDoneMon == 1){
               SetMonitor(clerkStates, myLine, AVAILABLE);
+              PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" is being used by senator\n", 26);/*HUNG LINE*/
               Release(clerkSenatorCVLock[myLine]);
 
             }else{
@@ -114,6 +110,8 @@ int chooseCustomerFromLine(int myLine, char* clerkName, int clerkNameLength) {
         }else{
           PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" is not required by the senator\n", 33);/*HUNG LINE*/
             Acquire(clerkLineLock);
+
+              PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" acquired clerkLinelock\n", 24);/*HUNG LINE*/
             clerkBribeLineCnt = GetMonitor(clerkBribeLineCount, myLine);
             clerkLineCnt = GetMonitor(clerkLineCount, myLine);
             if(clerkBribeLineCnt > 0) {
@@ -134,18 +132,18 @@ int chooseCustomerFromLine(int myLine, char* clerkName, int clerkNameLength) {
                 PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" is waking up from a break now.\n", 33); PrintNl();/*HUNG LINE*/
                 SetMonitor(clerkStates, myLine, AVAILABLE);
                 Release(breakLock[myLine]);
-                /*if(allCustomersAreDone) {
+                allCustDone = GetMonitor(allCustomersAreDone, 0);
+                if(allCustDone == 1) {
                     Exit(0);
-                }*/
+                }
             }
         }
-    } while(GetMonitor(clerkStates, myLine) != BUSY);
+        clerkState = GetMonitor(clerkStates, myLine) ;
+    } while(clerkState!= BUSY);
 
     PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" Acquring clerkLock\n", 21);/*HUNG LINE*/
-
     Acquire(clerkLock[myLine]);
     PrintString(clerkName, clerkNameLength); PrintNum(myLine); PrintString(" Clerklock acquired\n", 21);/*HUNG LINE*/
-
     Release(clerkLineLock);
     /*wait for customer*/
     if(testFlag){

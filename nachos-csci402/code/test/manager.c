@@ -4,23 +4,22 @@
 int prevTotalBoolCount = 0;
 int currentTotalBoolCount = 0;
 void Manager() {
-    int totalLineCount, i, waitTime, senatorLineNum;
-
-        SetMonitor(allCustomersAreDone, 0, 0);
+    int totalLineCount, i, waitTime, senatorLineNum, clrkLineCnt, clrkBribeLineCnt;
+    SetMonitor(allCustomersAreDone, 0, 0);
     do {
-        /* IntStatus oldLevel = interrupt->SetLevel(IntOff); disable interrupts*/
         Acquire(outsideLock);
         totalLineCount = 0;
         for(i = 0; i < clerkCount; ++i) {
-            totalLineCount += GetMonitor(clerkLineCount, i) + GetMonitor(clerkBribeLineCount, i);
+            clrkLineCnt = GetMonitor(clerkLineCount, i);
+            clrkBribeLineCnt = GetMonitor(clerkBribeLineCount, i);
+            totalLineCount = totalLineCount + clrkLineCnt + clrkBribeLineCnt;
             senatorLineNum = GetMonitor(senatorLineCount, 0);
-            if(totalLineCount > 2 || senatorLineNum > 0 ) {
+            if(totalLineCount > 0 || senatorLineNum > 0 ) {
                 wakeUpClerks();
                 break;
             }
         }
         printMoney();
-        /* (void) interrupt->SetLevel(oldLevel); /*restore interrupts*/
         Release(outsideLock);
         waitTime = 100;
         for(i = 0; i < waitTime; ++i) {
@@ -36,7 +35,7 @@ void Manager() {
 
 
 /*Manager functions*/
-
+/*This function wakes up ALL clerks, so they check their lines, if noone is in their line, they'll go back on break*/
 void wakeUpClerks() {
     int i;
     for(i = 0; i < clerkCount; ++i) {
@@ -50,8 +49,7 @@ void wakeUpClerks() {
     }
 }
 
-
-
+/*Function to print money owned by clerks*/
 void printMoney() {
     int totalMoney = 0;
     int applicationMoney = 0;
@@ -72,7 +70,11 @@ void printMoney() {
         }
         totalMoney += tempMon;
     }
-
+    applicationMoney = applicationMoney * 100;
+    pictureMoney = pictureMoney * 100;
+    passportMoney = passportMoney * 100;
+    cashierMoney = cashierMoney * 100;
+    totalMoney = totalMoney * 100;
 
     PrintString("Manager has counted a total of ", 31); PrintNum(applicationMoney); PrintString(" for ApplicationClerks\n", 23);
     PrintString("Manager has counted a total of ", 31); PrintNum(pictureMoney); PrintString(" for PictureClerks\n", 19);
@@ -83,7 +85,7 @@ void printMoney() {
 
 
 int customersAreAllDone() {
-    int boolCount = 0, i, temp;
+    int boolCount = 0, i, temp, appMon, likeMon, certMon, doneMon;
     for(i = 0; i < customerCount + senatorCount; ++i) {
         temp = GetMonitor(isDone, i);
         boolCount += temp;
@@ -91,8 +93,16 @@ int customersAreAllDone() {
     prevTotalBoolCount = currentTotalBoolCount;
     currentTotalBoolCount = 0;
     for(i = 0; i < customerCount; ++i) {
-        currentTotalBoolCount +=  GetMonitor(applicationIsFiled, i) + GetMonitor(likesPicture, i) + GetMonitor(hasCertification, i) + GetMonitor(isDone, i);
+        appMon = GetMonitor(applicationIsFiled, i);
+        likeMon = GetMonitor(likesPicture, i);
+        certMon = GetMonitor(hasCertification, i);
+        doneMon = GetMonitor(isDone, i);
+      /*  currentTotalBoolCount = currentTotalBoolCount + appMon + likeMon + certMon + doneMon;*/
+
+        currentTotalBoolCount = currentTotalBoolCount + doneMon;
     }
+    PrintString("Manager is counting finished customers ", 39); PrintNum(currentTotalBoolCount); PrintNl();
+
     if(prevTotalBoolCount == currentTotalBoolCount) {
         wakeUpClerks();
     }
@@ -105,7 +115,7 @@ int customersAreAllDone() {
 
 int main(){
 
-    setup();
+  setup();
   Manager();
   Exit(0);
 }
